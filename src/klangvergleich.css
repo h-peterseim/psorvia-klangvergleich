@@ -14,7 +14,7 @@
 .pk__sw--gain { background: color-mix(in srgb, var(--pk-a) 40%, transparent); }
 .pk__sw--loss { margin-left: .6rem; border-color: var(--pk-b); background: repeating-linear-gradient(45deg, var(--pk-b) 0 2px, transparent 2px 5px); }
 .pk__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; }
-.pk__plot { position: relative; margin-top: 1.6rem; }
+.pk__plot { position: relative; margin-top: 2.4rem; }
 .pk__plot svg { display: block; width: 100%; height: 220px; border-radius: 10px; background: var(--pk-bg2); }
 .pk path, .pk line { vector-effect: non-scaling-stroke; }
 .pk__grid line { stroke: var(--pk-line); stroke-width: 1; }

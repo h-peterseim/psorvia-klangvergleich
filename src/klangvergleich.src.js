@@ -87,7 +87,7 @@ export function create(host, o) {
   for (const g of d.peaks || []) {
     const idx = Math.max(0, Math.min(N - 1, Math.round(Math.log(g.hz / 60) / Math.log(200) * N - 0.5)));
     const px = idx / (N - 1) * 100;
-    if (px - lastX < 6.5) continue;
+    if (px - lastX < 11) continue;
     lastX = px;
     const s = E('span', { class: 'pk__peak' }, plot, g.label || (g.ratio ? '×' + num(g.ratio, lang) : fhz(g.hz, lang)));
     s.style.setProperty('left', px.toFixed(1) + '%');
