@@ -1,0 +1,43 @@
+[English](../../README.md)
+
+# PSOrvia Klangvergleich
+
+**Slyšte a vizte rozdíl mezi dvěma zvuky – pro váš web**
+
+PSOrvia · [psorvia.io](https://psorvia.io)
+
+### ▶ [Živá ukázka](https://h-peterseim.github.io/psorvia-klangvergleich/)
+
+Dvě verze zvuku hrají synchronně a přepíná se mezi nimi bez kliknutí. Spektrum je vykresleno jako plochy, změna je označena, křivka se při přepnutí plynule převádí a při přehrávání se nad ní pohybuje skutečné spektrum. Čistý JavaScript a CSS bez závislostí.
+
+## Použití
+
+```html
+<link rel="stylesheet" href="klangvergleich.css">
+<script src="klangvergleich.js"></script>
+<script src="klangvergleich.i18n.js"></script> <!-- 28 languages besides English -->
+<div id="kv">
+  <audio controls src="before.m4a"></audio> <audio controls src="after.m4a"></audio> <!-- fallback -->
+</div>
+<script>
+PsoKlangvergleich.create(document.getElementById('kv'), {
+  lang: 'en',
+  before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
+  data: /* JSON from tools/vorrechner.py */ {}
+});
+</script>
+```
+
+```html
+<script type="module">
+import { create, auto } from './klangvergleich.esm.js';
+import './klangvergleich.i18n.esm.js';
+auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
+</script>
+```
+
+`tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` předem vypočítá křivky, popisky vrcholů, shrnutí pásem a spektrogramy (Python 3, numpy, Pillow, ffmpeg).
+
+Tlačítka s aria-pressed, živý stav, textové shrnutí změny, ovládání klávesnicí, světlý i tmavý vzhled, omezený pohyb (bez morfování a živé čáry), žádné vložené skripty, text od 13 px.
+
+MIT License · Petit Souris · [psorvia.io](https://psorvia.io)

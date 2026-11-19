@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""PSOrvia Klangvergleich - Vorrechner: zwei Audiodateien -> JSON fuer den Baustein (und optional zwei Spektrogramm-PNGs).
+Benoetigt python3, numpy, Pillow (nur fuer --png) und ffmpeg. Beide Dateien sollten gleich laut sein (Pegelabgleich vorher).
+
+  vorrechner.py VORHER NACHHER [--out datei.json] [--gipfel 6] [--grundton HZ] [--ton START DAUER] [--png PRAEFIX --png-url URLPRAEFIX]
+
+JSON: {"before":[128 dB], "after":[128 dB], "peaks":[{"hz","ratio"?,"db"}], "bands":[{"from","to","delta"}], "spectrogram":{"before","after"}?}
+Die 128 Werte liegen logarithmisch zwischen 60 Hz und 12 kHz, in dB bezogen auf das Maximum beider Kurven (Boden -90).
+--grundton: Gipfel werden zusaetzlich als Verhaeltnis ("ratio") zu diesem Ton ausgegeben. --ton: Zeitfenster (Sekunden) des ersten Tons fuer Gipfel und Spektrogramm (Vorgabe 0 bis 2)."""
+import sys, json, subprocess, argparse
+import numpy as np
+SR = 48000
+FR = np.geomspace(60, 12000, 129)
+MID = np.sqrt(FR[:-1] * FR[1:])
+
+def lesen(p):
+    r = subprocess.run(['ffmpeg', '-v', 'error', '-i', p, '-f', 'f32le', '-ac', '1', '-ar', str(SR), '-'], capture_output=True, check=True)
+    return np.frombuffer(r.stdout, '<f4').astype(np.float64)
+
+def mittel(x):
+    N = 8192; w = np.hanning(N); acc = np.zeros(N // 2 + 1)
+    for i in range(0, len(x) - N, N // 2): acc += np.abs(np.fft.rfft(x[i:i + N] * w)) ** 2
+    f = np.fft.rfftfreq(N, 1 / SR)
+    return np.array([acc[(f >= a) & (f < b)].sum() for a, b in zip(FR[:-1], FR[1:])])
+
+def gram(x, t0, dur, cols=192):
+    NN = 4096; ww = np.hanning(NN); ff = np.fft.rfftfreq(NN, 1 / SR); out = []
+    for c in range(cols):
+        i = int((t0 + c * dur / cols) * SR); seg = x[i:i + NN]
+        if len(seg) < NN: seg = np.pad(seg, (0, NN - len(seg)))
+        p = np.abs(np.fft.rfft(seg * ww)) ** 2
+        out.append([p[(ff >= a) & (ff < b)].sum() for a, b in zip(FR[:-1], FR[1:])])
+    return np.array(out).T
+
+def gipfel(x, t0, n, f0):
+    from scipy.signal import find_peaks
+    NF = 1 << 16; seg = x[int((t0 + .05) * SR):int((t0 + 1.25) * SR)]
+    seg = seg[:NF] if len(seg) >= NF else np.pad(seg, (0, NF - len(seg)))
+    sp = np.abs(np.fft.rfft(seg * np.hanning(NF))); f = np.fft.rfftfreq(NF, 1 / SR); m = (f > 150) & (f < 11000)
+    db = 20 * np.log10(sp / sp[m].max() + 1e-9)
+    idx, _ = find_peaks(np.where(m, db, -200), height=-32, prominence=10, distance=20)
+    chosen = []
+    for i in sorted(idx, key=lambda i: -db[i]):
+        if all(abs(np.log(f[i] / f[j])) > .12 for j in chosen): chosen.append(i)
+        if len(chosen) >= n: break
+    out = []
+    for i in sorted(chosen):
+        g = {'hz': round(float(f[i]), 1), 'db': round(float(db[i]), 1)}
+        if f0: g['ratio'] = round(float(f[i] / f0), 2)
+        out.append(g)
+    return out
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('vorher'); ap.add_argument('nachher'); ap.add_argument('--out'); ap.add_argument('--gipfel', type=int, default=0)
+    ap.add_argument('--grundton', type=float, default=0); ap.add_argument('--ton', nargs=2, type=float, default=[0, 2])
+    ap.add_argument('--png'); ap.add_argument('--png-url', default='')
+    a = ap.parse_args()
+    xa, xb = lesen(a.vorher), lesen(a.nachher)
+    pa, pb = mittel(xa), mittel(xb); ref = max(pa.max(), pb.max())
+    db = lambda v: [round(float(max(10 * np.log10(max(t / ref, 1e-12)), -90)), 1) for t in v]
+    bands = []
+    for lo, hi in ((0, 500), (500, 2000), (2000, 6000), (6000, 12000)):
+        m = (MID >= lo) & (MID < hi)
+        bands.append({'from': lo, 'to': hi, 'delta': round(float(10 * np.log10(max(pb[m].sum(), 1e-12) / max(pa[m].sum(), 1e-12))), 1)})
+    o = {'before': db(pa), 'after': db(pb), 'bands': bands, 'peaks': gipfel(xb, a.ton[0], a.gipfel, a.grundton) if a.gipfel else []}
+    if a.png:
+        from PIL import Image
+        ga, gb = gram(xa, *a.ton), gram(xb, *a.ton); sref = max(ga.max(), gb.max()); o['spectrogram'] = {}
+        for tag, g in (('before', ga), ('after', gb)):
+            lv = np.clip((10 * np.log10(np.maximum(g, 1e-12) / sref) + 70) / 70, 0, 1) ** 1.6
+            a8 = (np.flipud(lv) * 255).astype('uint8')
+            Image.fromarray(np.dstack([np.full_like(a8, 255)] * 3 + [a8]), 'RGBA').save(f'{a.png}-{tag}.png', optimize=True)
+            o['spectrogram'][tag] = f'{a.png_url}{a.png.split("/")[-1]}-{tag}.png'
+    s = json.dumps(o, ensure_ascii=False, separators=(',', ':'))
+    if a.out: open(a.out, 'w').write(s)
+    else: print(s)
+
+main()
