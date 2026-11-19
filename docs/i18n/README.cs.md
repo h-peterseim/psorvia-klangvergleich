@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Volitelná další zobrazení, volí se pomocí `views` (výchozí: jen spektrum): `wipe` (dělicí čára nad dvěma spektrogramy), `diff` (přidaná a ubraná energie), `level` (úroveň v čase s pozicí přehrávání), `stereo` (mračna bodů s korelací) a `glow` (spektrum naživo s jemným doznívajícím světlem). Kreslí se v canvasu v plném rozlišení zařízení; s `--ansichten` je `tools/vorrechner.py` předem spočítá.
+
+Další zobrazení a nástroje: `waterfall` (trojrozměrná krajina spektra v čase) a `radial` (pulzující kruhy; s `hero: true` samostatně a bez ovládacích prvků jako vizuální akcent). Posuvník prolínání plynule mísí zvuk i obraz od „před“ k „po“, i během přehrávání. Najetí nebo fokus na pásmo v shrnutí ho zvýrazní v grafu; lupa ukazuje frekvenci, úroveň a čas; kliknutí do spektrogramu, vodopádu nebo úrovně skočí na dané místo a přehraje. Animace se zastaví, když prvek není vidět nebo je karta skrytá, a při omezeném pohybu zůstávají klidné.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` předem vypočítá křivky, popisky vrcholů, shrnutí pásem a spektrogramy (Python 3, numpy, Pillow, ffmpeg).
 

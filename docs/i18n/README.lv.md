@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Neobligāti papildu skati, izvēlas ar opciju `views` (noklusējums: tikai spektrs): `wipe` (atdalītājs virs divām spektrogrammām), `diff` (pievienotā un noņemtā enerģija), `level` (līmenis laikā ar atskaņošanas pozīciju), `stereo` (punktu mākoņi ar korelāciju) un `glow` (spektrs tiešraidē ar maigu pēcspīdumu). Tie tiek zīmēti canvas ar pilnu ierīces izšķirtspēju; ar `--ansichten` `tools/vorrechner.py` to datus aprēķina iepriekš.
+
+Vairāk skatu un rīku: `waterfall` (spektra trīsdimensiju ainava laikā) un `radial` (pulsējoši gredzeni; ar `hero: true` tiek rādīts viens pats un bez vadīklām kā acu piesaistītājs). Pārslēgšanās slīdnis nepārtraukti sajauc skaņu un attēlu no „pirms“ uz „pēc“, arī atskaņošanas laikā. Uzvedot kursoru vai fokusējot joslu kopsavilkumā, tā tiek izcelta grafikā; lupa rāda frekvenci, līmeni un laiku; klikšķis spektrogrammā, ūdenskritumā vai līmenī pārlec turp un atskaņo. Animācijas apstājas, kad elements nav redzams vai cilne ir paslēpta, un paliek mierīgas ar samazinātu kustību.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` iepriekš aprēķina līknes, virsotņu etiķetes, joslu kopsavilkumu un spektrogrammas (Python 3, numpy, Pillow, ffmpeg).
 

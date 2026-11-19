@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Valgfrie ekstra visninger, vælges med indstillingen `views` (standard: kun spektrum): `wipe` (en skillelinje over to spektrogrammer), `diff` (tilføjet og fjernet energi), `level` (niveau over tid med afspilningsposition), `stereo` (punktskyer med korrelation) og `glow` (live-spektrum med blød efterglød). De tegnes i canvas i enhedens fulde opløsning; med `--ansichten` beregner `tools/vorrechner.py` deres data på forhånd.
+
+Flere visninger og værktøjer: `waterfall` (et tredimensionelt landskab af spektret over tid) og `radial` (pulserende ringe; med `hero: true` vises den alene og uden betjening som blikfang). En overtoningsskyder blander lyd og billede trinløst fra før til efter, også under afspilning. Hover eller fokus på et bånd i sammenfatningen fremhæver det i grafikken; et forstørrelsesglas viser frekvens, niveau og tid; et klik i spektrogrammet, vandfaldet eller niveauet hopper dertil og afspiller. Animationer holder pause, når elementet er uden for syne eller fanen er skjult, og forbliver rolige ved reduceret bevægelse.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` beregner kurver, toppe-etiketter, båndopsummering og spektrogrammer på forhånd (Python 3, numpy, Pillow, ffmpeg).
 

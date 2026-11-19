@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Optionale Zusatzansichten, gewählt mit der Option `views` (Standard: nur Spektrum): `wipe` (Trennlinie über zwei Spektrogrammen), `diff` (hinzugekommene und weggefallene Energie), `level` (Pegel über die Zeit mit Abspielposition), `stereo` (Punktwolken mit Korrelation) und `glow` (Live-Spektrum mit weichem Nachleuchten). Sie werden im Canvas in voller Geräteauflösung gezeichnet; mit `--ansichten` rechnet `tools/vorrechner.py` ihre Daten vorab.
+
+Weitere Ansichten und Werkzeuge: `waterfall` (dreidimensionale Spektrum-Landschaft über die Zeit) und `radial` (pulsierende Ringe; mit `hero: true` allein und ohne Bedienelemente als Blickfang). Ein Überblendregler mischt Ton und Bild stufenlos von vorher nach nachher, auch beim Abspielen. Hover oder Fokus auf eine Bandangabe in der Zusammenfassung hebt das Band in der Grafik hervor; eine Lupe zeigt Frequenz, Pegel und Zeit; ein Klick ins Spektrogramm, in den Wasserfall oder den Pegelverlauf springt dorthin und spielt ab. Animationen pausieren, wenn das Element nicht sichtbar oder der Tab verdeckt ist, und bleiben bei reduzierter Bewegung ruhig.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` berechnet Kurven, Gipfel-Etiketten, Bandzusammenfassung und Spektrogramme vorab (Python 3, numpy, Pillow, ffmpeg).
 

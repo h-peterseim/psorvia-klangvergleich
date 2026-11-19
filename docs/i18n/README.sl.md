@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Izbirni dodatni pogledi, izberejo se z možnostjo `views` (privzeto: samo spekter): `wipe` (ločnica čez dva spektrograma), `diff` (dodana in odvzeta energija), `level` (raven skozi čas s položajem predvajanja), `stereo` (oblaki točk s korelacijo) in `glow` (spekter v živo z mehkim posvitom). Rišejo se v canvasu v polni ločljivosti naprave; z `--ansichten` `tools/vorrechner.py` njihove podatke izračuna vnaprej.
+
+Več pogledov in orodij: `waterfall` (tridimenzionalna pokrajina spektra skozi čas) in `radial` (utripajoči obroči; z `hero: true` je prikazan sam in brez kontrolnikov kot privlačen element). Drsnik prelivanja zvezno meša zvok in sliko od prej proti potem, tudi med predvajanjem. Premik miške ali fokus na pas v povzetku ga poudari v grafiki; lupa kaže frekvenco, raven in čas; klik v spektrogram, slap ali raven skoči tja in predvaja. Animacije se ustavijo, ko element ni viden ali je zavihek skrit, in ostanejo mirne ob zmanjšanem gibanju.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` vnaprej izračuna krivulje, oznake vrhov, povzetek po pasovih in spektrograme (Python 3, numpy, Pillow, ffmpeg).
 

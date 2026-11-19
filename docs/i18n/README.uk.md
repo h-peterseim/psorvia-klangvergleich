@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Необов’язкові додаткові вигляди, вибираються опцією `views` (типово: лише спектр): `wipe` (роздільник над двома спектрограмами), `diff` (додана і прибрана енергія), `level` (рівень у часі з позицією відтворення), `stereo` (хмари точок з кореляцією) і `glow` (спектр наживо з м’яким післясяйвом). Вони малюються в canvas у повній роздільній здатності пристрою; з `--ansichten` `tools/vorrechner.py` заздалегідь обчислює їхні дані.
+
+Більше виглядів та інструментів: `waterfall` (тривимірний краєвид спектра в часі) і `radial` (пульсівні кільця; з `hero: true` показується окремо і без елементів керування як акцент). Повзунок плавного переходу безступінчасто змішує звук і зображення від «до» до «після», навіть під час відтворення. Наведення або фокус на смугу в підсумку виділяє її на графіку; лупа показує частоту, рівень і час; клік у спектрограмі, водоспаді чи рівні переходить туди й відтворює. Анімації призупиняються, коли елемент поза зором або вкладка прихована, і лишаються спокійними за зменшеного руху.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` заздалегідь обчислює криві, підписи піків, підсумок за смугами та спектрограми (Python 3, numpy, Pillow, ffmpeg).
 

@@ -45,10 +45,10 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a' }, after: { src: 'after.m4a' },
   data: { /* JSON from tools/vorrechner.py --ansichten */ },
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional, the first is the start view; default is only 'spectrum'
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional, the first is the start view; default is only 'spectrum'
 });
 &lt;/script&gt;</pre>
-<p>Besides the spectrum there are five more views, each switchable with the <code>views</code> option: a <strong>wipe</strong> divider over the two spectrograms, a <strong>difference</strong> map (added and removed energy), the <strong>level</strong> over time with the playback position, the <strong>stereo</strong> image as point clouds with correlation, and a <strong>glow</strong> of the live spectrum with a soft afterglow. All are drawn in canvas at full device resolution; <code>tools/vorrechner.py --ansichten</code> computes their data in advance.</p>
+<p>Besides the spectrum there are more views, each switchable with the <code>views</code> option: a <strong>wipe</strong> divider over the two spectrograms, a <strong>difference</strong> map (added and removed energy), the <strong>level</strong> over time with the playback position, the <strong>stereo</strong> image as point clouds with correlation, a <strong>waterfall</strong> landscape, a <strong>glow</strong> of the live spectrum with frequency colours and sparks, and <strong>radial</strong> pulsing rings (see <a href="hero.html">hero.html</a> for the controls-free <code>hero</code> option). A crossfade slider mixes before and after steplessly; hover a band in the summary to highlight it, use the lens, and click into a spectrogram to jump there. All are drawn in canvas at full device resolution; <code>tools/vorrechner.py --ansichten</code> computes their data in advance.</p>
 <p class="mut">The audio elements inside the container are the fallback without JavaScript or Web Audio; the script replaces them.</p>
 </main>
 <footer>MIT License · Petit Souris · <a href="https://github.com/h-peterseim/psorvia-klangvergleich">Source</a></footer>
@@ -62,7 +62,7 @@ var D=window.PSO_DEMO;
 function build(){
   if(api)api.destroy();
   var l=document.getElementById('lang').value,x=D[document.getElementById('ex').value];host.lang=l;
-  api=PsoKlangvergleich.create(host,{lang:l,before:{src:x.before},after:{src:x.after},data:x.data,views:['spectrum','wipe','diff','level','stereo','glow']});
+  api=PsoKlangvergleich.create(host,{lang:l,before:{src:x.before},after:{src:x.after},data:x.data,views:['spectrum','wipe','diff','level','stereo','waterfall','glow','radial']});
 }
 document.getElementById('ex').addEventListener('change',build);
 document.getElementById('lang').addEventListener('change',build);

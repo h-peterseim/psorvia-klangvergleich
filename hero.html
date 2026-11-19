@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PSOrvia Klangvergleich – hero</title>
+<link rel="stylesheet" href="klangvergleich.css"></head>
+<body style="max-width:40rem;margin:2rem auto;padding:0 16px;font:16px/1.5 system-ui,sans-serif">
+<h1>PSOrvia Klangvergleich</h1>
+<p>The <code>hero</code> option: pulsing rings without any controls. Click or press Enter to play.</p>
+<div id="kv"></div>
+<script src="klangvergleich.js"></script>
+<script src="media/demo-data.js"></script>
+<script>
+var x = window.PSO_DEMO.bell;
+PsoKlangvergleich.create(document.getElementById('kv'), { hero: true, before: { src: x.before }, after: { src: x.after }, data: x.data });
+</script></body></html>

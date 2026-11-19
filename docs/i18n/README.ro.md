@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Vizualizări suplimentare opționale, alese cu opțiunea `views` (implicit: doar spectru): `wipe` (un separator peste două spectrograme), `diff` (energie adăugată și eliminată), `level` (nivel în timp cu poziția de redare), `stereo` (nori de puncte cu corelație) și `glow` (spectru live cu o strălucire reziduală blândă). Sunt desenate în canvas la rezoluția completă a dispozitivului; cu `--ansichten`, `tools/vorrechner.py` le calculează datele în avans.
+
+Mai multe vizualizări și instrumente: `waterfall` (un peisaj tridimensional al spectrului în timp) și `radial` (inele pulsante; cu `hero: true` este afișat singur și fără comenzi ca element de atracție). Un glisor de fundal încrucișat amestecă sunetul și imaginea continuu de la înainte la după, chiar și în timpul redării. Trecerea cursorului sau focalizarea pe o bandă din rezumat o evidențiază în grafic; o lupă arată frecvența, nivelul și timpul; un clic în spectrogramă, cascadă sau nivel sare acolo și redă. Animațiile se opresc când elementul nu este vizibil sau fila este ascunsă și rămân calme cu mișcare redusă.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` calculează în avans curbele, etichetele vârfurilor, rezumatul pe benzi și spectrogramele (Python 3, numpy, Pillow, ffmpeg).
 

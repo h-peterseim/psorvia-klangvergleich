@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Opcionális további nézetek, a `views` beállítással választhatók (alapértelmezés: csak spektrum): `wipe` (elválasztó két spektrogram felett), `diff` (hozzáadott és elvett energia), `level` (szint az idő függvényében a lejátszási pozícióval), `stereo` (pontfelhők korrelációval) és `glow` (élő spektrum lágy utánvilágítással). Canvasban rajzolódnak a készülék teljes felbontásán; az `--ansichten` kapcsolóval a `tools/vorrechner.py` előre kiszámítja az adataikat.
+
+További nézetek és eszközök: `waterfall` (a spektrum háromdimenziós tája az idő mentén) és `radial` (pulzáló gyűrűk; a `hero: true` beállítással egyedül és kezelőelemek nélkül látványelemként jelenik meg). Egy átúsztató csúszka fokozatmentesen keveri a hangot és a képet az előtte-ből az utána felé, lejátszás közben is. Az összefoglalóban egy sáv fölé húzás vagy fókusz kiemeli azt a grafikonon; a nagyító frekvenciát, szintet és időt mutat; a spektrogramra, a vízesésre vagy a szintre kattintva odaugrik és lejátszik. Az animációk szünetelnek, ha az elem nem látszik vagy a lap rejtett, és csökkentett mozgásnál nyugodtak maradnak.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` előre kiszámítja a görbéket, a csúcscímkéket, a sávösszegzést és a spektrogramokat (Python 3, numpy, Pillow, ffmpeg).
 

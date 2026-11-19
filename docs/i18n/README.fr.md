@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Vues supplémentaires facultatives, choisies avec l’option `views` (par défaut : spectre seul) : `wipe` (un séparateur sur deux spectrogrammes), `diff` (énergie ajoutée et retirée), `level` (niveau au fil du temps avec la position de lecture), `stereo` (nuages de points avec corrélation) et `glow` (spectre en direct avec une douce rémanence). Elles sont dessinées en canvas à la pleine résolution de l’appareil ; avec `--ansichten`, `tools/vorrechner.py` calcule leurs données à l’avance.
+
+Plus de vues et d’outils : `waterfall` (un paysage tridimensionnel du spectre au fil du temps) et `radial` (anneaux pulsants ; avec `hero: true` il s’affiche seul et sans commandes comme élément d’appel). Un curseur de fondu mélange le son et l’image en continu d’avant à après, même pendant la lecture. Le survol ou le focus sur une bande du résumé la met en évidence dans le graphique ; une loupe indique fréquence, niveau et temps ; un clic dans le spectrogramme, la cascade ou le niveau saute à cet endroit et lit. Les animations se mettent en pause quand l’élément n’est pas visible ou l’onglet masqué, et restent calmes avec un mouvement réduit.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` calcule à l’avance les courbes, les étiquettes de pics, le résumé par bandes et les spectrogrammes (Python 3, numpy, Pillow, ffmpeg).
 

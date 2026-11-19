@@ -65,8 +65,8 @@ async def main():
             # Zusatzansichten: Auswahl, Canvas in voller Geraeteaufloesung, nicht leer, hell + dunkel, Schrift, Schieber
             await cmd('Page.navigate', url=f'http://127.0.0.1:{port}/index.html'); await asyncio.sleep(1.5)
             await cmd('Emulation.setDeviceMetricsOverride', width=1100, height=1100, deviceScaleFactor=2, mobile=False)
-            VIEWS = ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow']
-            chk(await ev("document.querySelectorAll('.pk__vchip').length") == 6 and await ev("document.querySelector('.pk').dataset.view") == 'spectrum', 'Ansichten: 6 Knoepfe, Standard Spektrum')
+            VIEWS = ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial']
+            chk(await ev("document.querySelectorAll('.pk__vchip').length") == 8 and await ev("document.querySelector('.pk').dataset.view") == 'spectrum', 'Ansichten: 8 Knoepfe, Standard Spektrum')
             chk(await ev("[...document.querySelectorAll('.pk__vchip')].every(b=>parseFloat(getComputedStyle(b).fontSize)>=13&&b.getBoundingClientRect().height>=44)"), 'Ansichten: Knoepfe >= 13 px und >= 44 px')
             for th in ('light', 'dark'):
                 await cmd('Emulation.setEmulatedMedia', features=[{'name': 'prefers-color-scheme', 'value': th}]); await asyncio.sleep(.3)
@@ -98,15 +98,50 @@ async def main():
             chk(w0 == w1 and sh == 'none', f'Umschalter stabil bei Play/Pause {w0} {w1}')
             # Zeitachse einheitlich
             chk(await ev("(async()=>{const j=await (await fetch('media/glocke.json')).json();return Math.abs(j.grams.dur-j.level.dur)<.05})()"), 'Zeitansichten: gleiche Dauer in grams und level')
-            # Abspielen (stumm): Glow mit Nachleuchten, Pegel mit Abspielposition
-            for v in ('glow', 'level', 'wipe'):
-                await ev(f"document.querySelector('.pk__vchip[data-view={v}]').click()"); await asyncio.sleep(.5)
+            # Abspielen (stumm) je Ansicht mit Bildrate (Ziel >= 50 fps), Fotos beim Spielen
+            FPS = {}
+            await cmd('Emulation.setDeviceMetricsOverride', width=1100, height=1100, deviceScaleFactor=1, mobile=False)
+            await cmd('Emulation.setEmulatedMedia', features=[{'name': 'prefers-color-scheme', 'value': 'dark'}])
+            for v in ('spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'):
+                await ev("var s=document.getElementById('lang'); s.dispatchEvent(new Event('change'))"); await asyncio.sleep(.8)
+                await ev(f"document.querySelector('.pk__vchip[data-view={v}]').click()"); await asyncio.sleep(.6)
                 await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(2.2)
                 chk(await ev("document.querySelector('.pk').dataset.playing") == 'true', f'Abspielen in Ansicht {v}')
-                if v == 'glow':
+                FPS[v] = await ev("new Promise(r=>{let n=0,t0=performance.now();const f=()=>{n++;if(performance.now()-t0<2500)requestAnimationFrame(f);else r(n/((performance.now()-t0)/1000))};requestAnimationFrame(f)})")
+                if v in ('glow', 'waterfall', 'radial'):
                     cl = await ev("(()=>{const r=document.querySelector('.pk').getBoundingClientRect();return {x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height}})()")
-                    rr = await cmd('Page.captureScreenshot', format='png', clip={'x': cl['x'], 'y': cl['y'], 'width': cl['w'], 'height': cl['h'], 'scale': 1}); open(f'{OUT}/ansicht-glow-spielt.png', 'wb').write(base64.b64decode(rr['data']))
+                    rr = await cmd('Page.captureScreenshot', format='png', clip={'x': cl['x'], 'y': cl['y'], 'width': cl['w'], 'height': cl['h'], 'scale': 1}); open(f'{OUT}/ansicht-{v}-spielt.png', 'wb').write(base64.b64decode(rr['data']))
                 await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(.4)
+            print('FPS', {k: round(x, 1) for k, x in FPS.items()})
+            chk(all(x >= 45 for x in FPS.values()), 'Bildrate je Ansicht >= 45 fps (Ziel 50)')
+            await cmd('Emulation.setEmulatedMedia', features=[{'name': 'prefers-color-scheme', 'value': 'light'}])
+            # Ueberblendregler, Linse, Bandmarkierung, Spulen
+            await ev("document.querySelector('.pk__vchip[data-view=spectrum]').click()"); await asyncio.sleep(.5)
+            ds = []
+            for val in (0, 50, 100):
+                await ev(f"var r=document.querySelector('.pk__xf'); r.value={val}; r.dispatchEvent(new Event('input'))"); await asyncio.sleep(.1)
+                ds.append(await ev("document.querySelector('.pk__edge').getAttribute('d')"))
+            chk(len(set(ds)) == 3, 'Ueberblendregler: drei verschiedene Kurven (0/50/100)')
+            await ev("document.querySelector('.pk__xf').value=50; document.querySelector('.pk__xf').dispatchEvent(new Event('input'))")
+            await ev("document.querySelector('.pk__vchip[data-view=diff]').click()"); await asyncio.sleep(.6)
+            await shot('neu-ueberblend-50-diff')
+            await ev("document.querySelector('.pk__xf').value=100; document.querySelector('.pk__xf').dispatchEvent(new Event('input'))")
+            await ev("document.querySelector('.pk__band').dispatchEvent(new Event('mouseenter'))"); await asyncio.sleep(.2)
+            chk(float(await ev("document.querySelector('.pk__hl').getAttribute('width')")) > 0, 'Bandangabe markiert das Band in der Grafik')
+            await ev("document.querySelector('.pk__vchip[data-view=spectrum]').click()")
+            await ev("document.querySelector('.pk__band').dispatchEvent(new Event('mouseenter'))"); await asyncio.sleep(.2)
+            cl = await ev("(()=>{document.querySelector('.pk').scrollIntoView();const r=document.querySelector('.pk').getBoundingClientRect();return {x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height}})()")
+            rr = await cmd('Page.captureScreenshot', format='png', clip={'x': cl['x'], 'y': cl['y'], 'width': cl['w'], 'height': cl['h'], 'scale': 1}); open(f'{OUT}/neu-band-markiert.png', 'wb').write(base64.b64decode(rr['data']))
+            await ev("document.querySelector('.pk__band').dispatchEvent(new Event('mouseleave'))")
+            await ev("document.querySelector('.pk__vchip[data-view=wipe]').click()"); await asyncio.sleep(1.2)
+            await ev("(()=>{const c=document.querySelector('.pk__v--wipe .pk__cv'),r=c.getBoundingClientRect();c.dispatchEvent(new PointerEvent('pointermove',{clientX:r.left+r.width*.7,clientY:r.top+r.height*.4,bubbles:true}))})()"); await asyncio.sleep(.3)
+            chk('kHz' in (await ev("document.querySelector('.pk__read').textContent")) or 'Hz' in (await ev("document.querySelector('.pk__read').textContent")), 'Lupe: Frequenz, dB und Zeit')
+            cl = await ev("(()=>{const r=document.querySelector('.pk').getBoundingClientRect();return {x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height}})()")
+            rr = await cmd('Page.captureScreenshot', format='png', clip={'x': cl['x'], 'y': cl['y'], 'width': cl['w'], 'height': cl['h'], 'scale': 1}); open(f'{OUT}/neu-lupe-wipe.png', 'wb').write(base64.b64decode(rr['data']))
+            await ev("document.querySelector('.pk__vchip[data-view=level]').click()"); await asyncio.sleep(.8)
+            await ev("(()=>{const c=document.querySelector('.pk__v--level .pk__cv'),r=c.getBoundingClientRect();c.dispatchEvent(new MouseEvent('click',{clientX:r.left+r.width*.55,clientY:r.top+r.height*.5,bubbles:true}))})()"); await asyncio.sleep(1.2)
+            chk(await ev("document.querySelector('.pk').dataset.playing") == 'true', 'Spulen: Klick in den Pegelverlauf spielt ab')
+            await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(.3)
             await ev("var e=document.getElementById('ex'); e.value='stereo'; e.dispatchEvent(new Event('change'))"); await asyncio.sleep(1.2)
             await ev("document.querySelector('.pk__vchip[data-view=stereo]').click()"); await asyncio.sleep(1)
             for th in ('light', 'dark'):
@@ -124,7 +159,7 @@ async def main():
             await ev("document.querySelector('.pk__vchip[data-view=spectrum]').click()"); await asyncio.sleep(.3)
             chk(await ev("[...document.querySelectorAll('.pk *')].filter(e=>e.hasAttribute('style')&&!e.classList.contains('pk__peak')&&!e.classList.contains('pk__gram')).length") == 0, 'Ansichten: keine Inline-Stile')
             await ev("document.getElementById('lang').value='de'; document.getElementById('lang').dispatchEvent(new Event('change'))"); await asyncio.sleep(.6)
-            chk(await ev("[...document.querySelectorAll('.pk__vchip')].map(b=>b.textContent).join()") == 'Spektrum,Wischer,Differenz,Pegel,Stereo,Nachleuchten', 'Ansichten: Sprachwechsel de')
+            chk(await ev("[...document.querySelectorAll('.pk__vchip')].map(b=>b.textContent).join()") == 'Spektrum,Wischer,Differenz,Pegel,Stereo,Wasserfall,Nachleuchten,Radial', 'Ansichten: Sprachwechsel de')
             await ev("document.getElementById('lang').value='en'; document.getElementById('lang').dispatchEvent(new Event('change'))"); await asyncio.sleep(.4)
             chk(await ev("(()=>{const m=document.createElement('canvas');return document.querySelectorAll('canvas').length")==3 if False else True, 'Ansichten: Neuaufbau ohne Reste')
             await cmd('Emulation.setEmulatedMedia', features=[{'name': 'prefers-color-scheme', 'value': 'light'}])
@@ -139,6 +174,16 @@ async def main():
                 chk(await ev("document.querySelector('.pk__heard').textContent.indexOf('could not')<0"), f'file://{pg}: keine Fehlermeldung')
                 await ev("document.querySelector('.pk__vchip[data-view=level]').click()"); await asyncio.sleep(.5)
                 chk(await ev("document.querySelector('.pk__v--level').hidden") is False, f'file://{pg}: Ansicht Pegel')
+            # Hero ohne Bedienelemente
+            await cmd('Page.navigate', url=f'http://127.0.0.1:{port}/hero.html'); await asyncio.sleep(2)
+            chk(await ev("getComputedStyle(document.querySelector('.pk__head')).display") == 'none' and await ev("document.querySelector('.pk__cv').getAttribute('role')") == 'button', 'hero: ohne Bedienelemente, Canvas ist Knopf')
+            await ev("document.querySelector('.pk__cv').click()"); await asyncio.sleep(1.2)
+            chk(await ev("document.querySelector('.pk').dataset.playing") == 'true', 'hero: Klick spielt')
+            await ev("document.querySelector('.pk__cv').click()")
+            for th in ('light', 'dark'):
+                await cmd('Emulation.setEmulatedMedia', features=[{'name': 'prefers-color-scheme', 'value': th}]); await asyncio.sleep(.5)
+                await shot(f'neu-hero-{"hell" if th == "light" else "dunkel"}')
+            await cmd('Emulation.setEmulatedMedia', features=[{'name': 'prefers-color-scheme', 'value': 'light'}])
             # Handy 360 px
             await cmd('Emulation.setDeviceMetricsOverride', width=360, height=800, deviceScaleFactor=2, mobile=True); await asyncio.sleep(.6)
             chk(await ev("document.documentElement.scrollWidth<=360"), 'kein waagerechtes Scrollen bei 360 px')

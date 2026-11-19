@@ -22,7 +22,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -36,6 +36,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Optional extra views, chosen with the `views` option (default: spectrum only): `wipe` (a divider over two spectrograms), `diff` (added and removed energy), `level` (level over time with the playback position), `stereo` (point clouds with correlation) and `glow` (live spectrum with a soft afterglow). They are drawn in canvas at full device resolution; add `--ansichten` to `tools/vorrechner.py` to compute their data in advance.
+
+More views and tools: `waterfall` (a three-dimensional landscape of the spectrum over time) and `radial` (pulsing rings; with `hero: true` it is shown alone and without controls as an eye-catcher). A crossfade slider mixes sound and picture steplessly from before to after, even while playing. Hovering or focusing a band in the summary highlights it in the graphic; a lens shows frequency, level and time; a click in a spectrogram, waterfall or level view jumps there and plays. Animations pause when the element is out of view or the tab is hidden, and stay calm with reduced motion.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` computes the curves, peak labels, band summary and spectrograms in advance (Python 3, numpy, Pillow, ffmpeg).
 

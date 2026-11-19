@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Pasirenkami papildomi vaizdai, parenkami parinktimi `views` (numatyta: tik spektras): `wipe` (skirtukas virš dviejų spektrogramų), `diff` (pridėta ir pašalinta energija), `level` (lygis laike su grojimo pozicija), `stereo` (taškų debesys su koreliacija) ir `glow` (gyvas spektras su švelniu likutiniu švytėjimu). Jie piešiami canvas visa įrenginio skiriamąja geba; su `--ansichten` `tools/vorrechner.py` jų duomenis apskaičiuoja iš anksto.
+
+Daugiau vaizdų ir įrankių: `waterfall` (trimatis spektro kraštovaizdis laike) ir `radial` (pulsuojantys žiedai; su `hero: true` rodomas vienas ir be valdiklių kaip akcentas). Pereinamojo maišymo slankiklis sklandžiai maišo garsą ir vaizdą nuo „prieš“ iki „po“, net grojant. Užvedus ar fokusavus santraukos juostą, ji paryškinama grafike; lupa rodo dažnį, lygį ir laiką; spustelėjus spektrogramą, krioklį ar lygį peršokama ten ir grojama. Animacijos pristabdomos, kai elemento nesimato ar skirtukas paslėptas, ir lieka ramios sumažinus judesį.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` iš anksto apskaičiuoja kreives, viršūnių žymes, juostų santrauką ir spektrogramas (Python 3, numpy, Pillow, ffmpeg).
 

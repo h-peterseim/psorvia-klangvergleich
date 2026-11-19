@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Opcjonalne dodatkowe widoki, wybierane opcją `views` (domyślnie: tylko widmo): `wipe` (linia podziału nad dwoma spektrogramami), `diff` (dodana i usunięta energia), `level` (poziom w czasie z pozycją odtwarzania), `stereo` (chmury punktów z korelacją) i `glow` (widmo na żywo z miękką poświatą). Rysowane są w canvas w pełnej rozdzielczości urządzenia; z `--ansichten` narzędzie `tools/vorrechner.py` oblicza ich dane z góry.
+
+Więcej widoków i narzędzi: `waterfall` (trójwymiarowy krajobraz widma w czasie) i `radial` (pulsujące pierścienie; z `hero: true` pokazywany samodzielnie i bez elementów sterujących jako przyciągacz uwagi). Suwak przenikania płynnie miesza dźwięk i obraz od „przed” do „po”, także podczas odtwarzania. Najechanie lub fokus na pasmo w podsumowaniu wyróżnia je na wykresie; lupa pokazuje częstotliwość, poziom i czas; kliknięcie w spektrogram, wodospad lub poziom przeskakuje tam i odtwarza. Animacje wstrzymują się, gdy element jest poza widokiem lub karta jest ukryta, i pozostają spokojne przy ograniczonym ruchu.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` z góry oblicza krzywe, etykiety szczytów, podsumowanie pasm i spektrogramy (Python 3, numpy, Pillow, ffmpeg).
 

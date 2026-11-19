@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Radhairc bhreise roghnacha, roghnaithe leis an rogha `views` (réamhshocrú: speictream amháin): `wipe` (roinnteoir thar dhá speictreagram), `diff` (fuinneamh breise agus fuinneamh a baineadh), `level` (leibhéal thar am le suíomh an athsheinm), `stereo` (scamaill phointí le comhghaol) agus `glow` (speictream beo le hiarsholas boga). Tarraingítear iad i canvas ag lánréiteach na feiste; le `--ansichten` ríomhann `tools/vorrechner.py` a gcuid sonraí roimh ré.
+
+Tuilleadh radharcanna agus uirlisí: `waterfall` (tírdhreach tríthoiseach den speictream thar am) agus `radial` (fáinní buailteacha; le `hero: true` taispeántar ina aonar é gan rialtáin mar mheall súl). Measctar sleamhnán trasdula fuaim agus pictiúr go leanúnach ó roimh go tar éis, fiú le linn athsheinm. Má thaispeánann tú nó má dhírítear ar bhanda sa chlár achoimre aibhsítear sa ghrafaic é; taispeánann formhéadaitheoir minicíocht, leibhéal agus am; léimeann cliceáil sa speictreagram, san eas nó sa leibhéal ansin agus seinneann. Cuirtear na beochaintí ar sos nuair nach bhfuil an t-eilimint le feiceáil nó nuair atá an cluaisín folaithe, agus fanann siad ciúin le gluaiseacht laghdaithe.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` ríomhann sé na cuair, lipéid na mbuaicphointí, achoimre na mbanda agus na speictreagraim roimh ré (Python 3, numpy, Pillow, ffmpeg).
 

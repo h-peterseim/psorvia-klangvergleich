@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Προαιρετικές πρόσθετες προβολές, επιλέγονται με την επιλογή `views` (προεπιλογή: μόνο φάσμα): `wipe` (διαχωριστής πάνω από δύο φασματογραφήματα), `diff` (ενέργεια που προστέθηκε και αφαιρέθηκε), `level` (στάθμη στον χρόνο με τη θέση αναπαραγωγής), `stereo` (νέφη σημείων με συσχέτιση) και `glow` (ζωντανό φάσμα με απαλή μεταλαμπή). Σχεδιάζονται σε canvas με πλήρη ανάλυση συσκευής· με `--ansichten` το `tools/vorrechner.py` υπολογίζει εκ των προτέρων τα δεδομένα τους.
+
+Περισσότερες προβολές και εργαλεία: `waterfall` (τρισδιάστατο τοπίο του φάσματος στον χρόνο) και `radial` (παλλόμενοι δακτύλιοι· με `hero: true` εμφανίζεται μόνο του και χωρίς χειριστήρια ως πόλος έλξης). Ένας ολισθητής σταδιακής εναλλαγής αναμειγνύει ήχο και εικόνα συνεχώς από το πριν στο μετά, ακόμη και κατά την αναπαραγωγή. Η αιώρηση ή η εστίαση σε μια ζώνη της περίληψης την τονίζει στο γράφημα· ένας μεγεθυντικός φακός δείχνει συχνότητα, στάθμη και χρόνο· ένα κλικ στο φασματογράφημα, στον καταρράκτη ή στη στάθμη μεταβαίνει εκεί και παίζει. Οι κινήσεις σταματούν όταν το στοιχείο δεν φαίνεται ή η καρτέλα είναι κρυφή και παραμένουν ήρεμες με μειωμένη κίνηση.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` υπολογίζει εκ των προτέρων καμπύλες, ετικέτες κορυφών, σύνοψη ζωνών και φασματογραφήματα (Python 3, numpy, Pillow, ffmpeg).
 

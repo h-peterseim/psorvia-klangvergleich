@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Tampilan tambahan opsional, dipilih dengan opsi `views` (bawaan: hanya spektrum): `wipe` (pembagi di atas dua spektrogram), `diff` (energi yang ditambah dan dikurangi), `level` (level menurut waktu dengan posisi pemutaran), `stereo` (awan titik dengan korelasi) dan `glow` (spektrum langsung dengan cahaya susulan yang lembut). Semuanya digambar di canvas pada resolusi penuh perangkat; dengan `--ansichten`, `tools/vorrechner.py` menghitung datanya lebih dulu.
+
+Lebih banyak tampilan dan alat: `waterfall` (lanskap spektrum tiga dimensi menurut waktu) dan `radial` (cincin berdenyut; dengan `hero: true` ditampilkan sendiri dan tanpa kontrol sebagai penarik perhatian). Penggeser pemudaran silang mencampur suara dan gambar tanpa tingkatan dari sebelum ke sesudah, bahkan saat memutar. Mengarahkan atau memfokuskan sebuah pita di ringkasan menyorotinya di grafik; kaca pembesar menampilkan frekuensi, level, dan waktu; klik pada spektrogram, air terjun, atau level melompat ke sana dan memutar. Animasi dijeda saat elemen tidak terlihat atau tab tersembunyi, dan tetap tenang dengan gerakan berkurang.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` menghitung kurva, label puncak, ringkasan pita, dan spektrogram sebelumnya (Python 3, numpy, Pillow, ffmpeg).
 

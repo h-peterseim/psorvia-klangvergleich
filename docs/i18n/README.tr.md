@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 İsteğe bağlı ek görünümler, `views` seçeneğiyle seçilir (varsayılan: yalnızca spektrum): `wipe` (iki spektrogramın üzerinde ayırıcı), `diff` (eklenen ve çıkan enerji), `level` (oynatma konumuyla zaman içinde seviye), `stereo` (korelasyonlu nokta bulutları) ve `glow` (yumuşak art ışımalı canlı spektrum). Cihazın tam çözünürlüğünde canvas içinde çizilirler; `--ansichten` ile `tools/vorrechner.py` verilerini önceden hesaplar.
+
+Daha fazla görünüm ve araç: `waterfall` (spektrumun zaman içindeki üç boyutlu manzarası) ve `radial` (nabız gibi atan halkalar; `hero: true` ile tek başına ve denetimsiz, dikkat çekici bir öğe olarak gösterilir). Bir geçiş kaydırıcısı sesi ve görüntüyü önceden sonraya kademesiz karıştırır, çalma sırasında da. Özetteki bir banda gelmek veya odaklanmak onu grafikte vurgular; bir büyüteç frekansı, seviyeyi ve zamanı gösterir; spektrograma, şelaleye veya seviyeye tıklamak oraya atlar ve çalar. Öğe görünmediğinde veya sekme gizlendiğinde animasyonlar durur, azaltılmış harekette sakin kalır.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` eğrileri, tepe etiketlerini, bant özetini ve spektrogramları önceden hesaplar (Python 3, numpy, Pillow, ffmpeg).
 

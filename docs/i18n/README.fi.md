@@ -24,7 +24,7 @@ PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
   data: /* JSON from tools/vorrechner.py */ {},
-  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'waterfall', 'glow', 'radial'] // optional; hero: true shows only the rings
 });
 </script>
 ```
@@ -38,6 +38,8 @@ auto(); // every [data-klangvergleich] element, options as JSON in the attribute
 ```
 
 Valinnaiset lisänäkymät, valitaan asetuksella `views` (oletus: vain spektri): `wipe` (jakaja kahden spektrogrammin päällä), `diff` (lisääntynyt ja vähentynyt energia), `level` (taso ajan yli toistokohdan kanssa), `stereo` (pistepilvet korrelaatiolla) ja `glow` (reaaliaikainen spektri pehmeällä jälkihohdolla). Ne piirretään canvasiin laitteen täydellä erottelukyvyllä; `--ansichten` laskee niiden tiedot etukäteen `tools/vorrechner.py`-työkalulla.
+
+Lisää näkymiä ja työkaluja: `waterfall` (spektrin kolmiulotteinen maisema ajan yli) ja `radial` (sykkivät renkaat; asetuksella `hero: true` näytetään yksin ja ilman ohjaimia katseenvangitsijana). Ristiinhäivytysliuku sekoittaa äänen ja kuvan portaattomasti ennen-tilasta jälkeen-tilaan, myös toiston aikana. Yhteenvedon kaistan osoittaminen tai kohdistus korostaa sen grafiikassa; suurennuslasi näyttää taajuuden, tason ja ajan; napsautus spektrogrammiin, vesiputoukseen tai tasoon hyppää kohtaan ja toistaa. Animaatiot taukoavat, kun elementti ei ole näkyvissä tai välilehti on piilossa, ja pysyvät rauhallisina vähennetyllä liikkeellä.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` laskee käyrät, huippujen tunnisteet, kaistayhteenvedon ja spektrogrammit etukäteen (Python 3, numpy, Pillow, ffmpeg).
 
