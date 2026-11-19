@@ -3,9 +3,10 @@
 <link rel="stylesheet" href="klangvergleich.css"></head>
 <body style="max-width:50rem;margin:2rem auto;padding:0 16px;font:16px/1.5 system-ui,sans-serif">
 <h1>PSOrvia Klangvergleich</h1>
-<div id="kv"><audio controls src="media/glocke-vorher.m4a"></audio> <audio controls src="media/glocke-nachher.m4a"></audio></div>
-<script type="module">
-import { create } from './klangvergleich.esm.js';
-const data = await (await fetch('media/glocke.json')).json();
-create(document.getElementById('kv'), { views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'], before: { src: 'media/glocke-vorher.m4a', label: 'Ratio' }, after: { src: 'media/glocke-nachher.m4a', label: 'Envelopes' }, data });
+<div id="kv"></div>
+<script src="klangvergleich.js"></script>
+<script src="media/demo-data.js"></script>
+<script>
+var x = window.PSO_DEMO.bell;
+PsoKlangvergleich.create(document.getElementById('kv'), { views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'], before: { src: x.before, label: 'Ratio' }, after: { src: x.after, label: 'Envelopes' }, data: x.data });
 </script></body></html>

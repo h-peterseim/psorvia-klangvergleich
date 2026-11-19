@@ -418,7 +418,7 @@ export function create(host, o) {
         const get = async (u) => ctx.decodeAudioData(await (await fetch(u)).arrayBuffer());
         buf = { before: await get(o.before.src), after: await get(o.after.src) };
       }
-    } catch (e) { status.textContent = L.error; return; }
+    } catch (e) { status.textContent = L.error; heard.textContent = L.error + ' '; return; }
     if (current && current !== api) current.stop();
     current = api;
     if (!master) {

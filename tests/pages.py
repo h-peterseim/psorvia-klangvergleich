@@ -129,6 +129,16 @@ async def main():
             chk(await ev("(()=>{const m=document.createElement('canvas');return document.querySelectorAll('canvas').length")==3 if False else True, 'Ansichten: Neuaufbau ohne Reste')
             await cmd('Emulation.setEmulatedMedia', features=[{'name': 'prefers-color-scheme', 'value': 'light'}])
             await cmd('Emulation.setDeviceMetricsOverride', width=1100, height=900, deviceScaleFactor=1, mobile=False)
+            # Doppelklick-Lauf: file:// (kein Server), Ton und Daten als data:-URLs
+            for pg in ('index.html', 'demo.html'):
+                await cmd('Page.navigate', url=f'file://{R}/{pg}'); await asyncio.sleep(2)
+                chk(await ev("document.querySelectorAll('.pk').length") == 1 and await ev("document.querySelectorAll('.pk__peak').length") >= 2, f'file://{pg}: Baustein aufgebaut')
+                await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(1.5)
+                chk(await ev("document.querySelector('.pk').dataset.playing") == 'true', f'file://{pg}: Abspielen laeuft (Ton ueber data:-URL)')
+                await ev("document.querySelector('.pk__play').click()")
+                chk(await ev("document.querySelector('.pk__heard').textContent.indexOf('could not')<0"), f'file://{pg}: keine Fehlermeldung')
+                await ev("document.querySelector('.pk__vchip[data-view=level]').click()"); await asyncio.sleep(.5)
+                chk(await ev("document.querySelector('.pk__v--level').hidden") is False, f'file://{pg}: Ansicht Pegel')
             # Handy 360 px
             await cmd('Emulation.setDeviceMetricsOverride', width=360, height=800, deviceScaleFactor=2, mobile=True); await asyncio.sleep(.6)
             chk(await ev("document.documentElement.scrollWidth<=360"), 'kein waagerechtes Scrollen bei 360 px')
