@@ -7,7 +7,7 @@ Benoetigt python3, numpy, Pillow (nur fuer --png) und ffmpeg. Beide Dateien soll
 JSON: {"before":[128 dB], "after":[128 dB], "peaks":[{"hz","ratio"?,"db"}], "bands":[{"from","to","delta"}], "spectrogram":{"before","after"}?}
 Die 128 Werte liegen logarithmisch zwischen 60 Hz und 12 kHz, in dB bezogen auf das Maximum beider Kurven (Boden -90).
 --grundton: Gipfel werden zusaetzlich als Verhaeltnis ("ratio") zu diesem Ton ausgegeben. --ton: Zeitfenster (Sekunden) des ersten Tons fuer Gipfel und Spektrogramm (Vorgabe 0 bis 2).
---ansichten: rechnet zusaetzlich die Daten der Zusatzansichten (Wischer/Differenz: "grams", Pegelverlauf: "level", Stereobild: "stereo"); "grams" deckt das --ton-Fenster ab.
+--ansichten: rechnet zusaetzlich die Daten der Zusatzansichten (Wischer/Differenz: "grams", Pegelverlauf: "level", Stereobild: "stereo"); "grams" deckt die ganze Länge ab (wie "level").
 --ergaenze: liest eine vorhandene JSON-Datei ein und fuegt nur die Ansichts-Daten hinzu (Kurven, Gipfel und PNGs bleiben)."""
 import sys, json, subprocess, argparse, base64
 import numpy as np
@@ -29,6 +29,7 @@ def ansichten(pa, pb, st_a, st_b, ton):
     """Daten der Zusatzansichten. grams: dB-Karten (0..255 = -80..0 dB, gemeinsamer Bezug), level: Hüllkurven, stereo: Dichte im Mitte/Seite-Gitter + Korrelation."""
     o = {}
     W, H = 320, 144
+    ton = [0, max(len(st_a), len(st_b)) / SR]   # ganze Länge, einheitlich mit dem Pegelverlauf
     fr = np.geomspace(60, 12000, H + 1); NN = 4096; ww = np.hanning(NN); ff = np.fft.rfftfreq(NN, 1 / SR)
     idx = [np.where((ff >= a) & (ff < b))[0] for a, b in zip(fr[:-1], fr[1:])]
     for i, ix in enumerate(idx):
@@ -43,7 +44,7 @@ def ansichten(pa, pb, st_a, st_b, ton):
         return m
     ma, mb = karte(st_a.mean(1)), karte(st_b.mean(1)); ref = max(ma.max(), mb.max(), 1e-12)
     q = lambda m: np.flipud(np.clip((10 * np.log10(np.maximum(m, 1e-12) / ref) + 80) / 80, 0, 1) * 255).round()
-    o['grams'] = {'w': W, 'h': H, 'dur': ton[1], 'before': b64(q(ma)), 'after': b64(q(mb))}
+    o['grams'] = {'w': W, 'h': H, 'dur': round(ton[1], 2), 'before': b64(q(ma)), 'after': b64(q(mb))}
     n = 160; lv = {}
     dur = max(len(st_a), len(st_b)) / SR
     for tag, st in (('before', st_a), ('after', st_b)):

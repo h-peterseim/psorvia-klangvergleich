@@ -118,8 +118,8 @@ export function create(host, o) {
     gram.style.setProperty('--pk-gram', `url(${d.spectrogram.after})`);
   }
   const part = (b) => (b.from <= 0 ? L.below.replace('{to}', fhz(b.to, lang)) : b.to >= 12000 ? L.above.replace('{from}', fhz(b.from, lang)) : L.between.replace('{from}', fhz(b.from, lang)).replace('{to}', fhz(b.to, lang)));
-  const more = (d.bands || []).filter((b) => b.delta >= 3).map(part), less = (d.bands || []).filter((b) => b.delta <= -3).map(part);
-  const sum = more.length || less.length ? [more.length ? L.more.replace('{x}', more.join('; ')) : '', less.length ? L.less.replace('{x}', less.join('; ')) : ''].filter(Boolean).join(' ') : L.same;
+  const bs = (d.bands || []).filter((b) => Math.abs(b.delta) >= 3);
+  const sum = bs.length ? bs.map((b) => (b.delta > 0 ? L.more : L.less).replace('{x}', part(b))).join(' ') : L.same;
   const pan = {}, cvs = {};
   const mk = (v) => {
     const p = E('div', { class: 'pk__v pk__v--' + v, hidden: '' }, host);

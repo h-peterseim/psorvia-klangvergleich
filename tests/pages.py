@@ -80,6 +80,24 @@ async def main():
                         chk(r and r['n'] > 12 and r['lab'] > 20, f'Ansicht {v} {th}: gezeichnet und beschriftet')
                     cl = await ev("(()=>{const e=document.querySelector('.pk');e.scrollIntoView();const r=e.getBoundingClientRect();return {x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height}})()")
                     rr = await cmd('Page.captureScreenshot', format='png', clip={'x': cl['x'], 'y': cl['y'], 'width': cl['w'], 'height': cl['h'], 'scale': 1}); open(f'{OUT}/ansicht-{v}-{"hell" if th == "light" else "dunkel"}.png', 'wb').write(base64.b64decode(rr['data']))
+            # Zusammenfassung: je Sprache beide Richtungen, ein vollstaendiger Satz je Band
+            r = await ev("""(()=>{const out=[];const langs=Object.keys(PsoKlangvergleich.languages);const n=128,z=Array(n).fill(-30);
+              for(const l of langs){for(const sg of [1,-1]){const h=document.createElement('div');document.body.appendChild(h);
+                const api=PsoKlangvergleich.create(h,{lang:l,before:{src:'x.m4a'},after:{src:'y.m4a'},data:{before:z,after:z,bands:[{from:0,to:500,delta:0},{from:500,to:2000,delta:4*sg},{from:2000,to:6000,delta:5*sg},{from:6000,to:12000,delta:0}]}});
+                const L=PsoKlangvergleich.languages[l]||{};const T=Object.assign({},PsoKlangvergleich.languages.en,L);const tpl=sg>0?T.more:T.less;const parts=tpl.split('{x}');
+                const t=h.querySelector('.pk__cap strong').textContent;
+                out.push([l,sg,parts.length==2&&t.split(parts[1]).length-1>=2&&t.indexOf('{')<0&&t.indexOf(';')<0,t]);api.destroy();h.remove();}}return out})()""")
+            bad = [x for x in r if not x[2]]
+            chk(len(r) == 58 and not bad, f'Zusammenfassung in 29 Sprachen, beide Richtungen, ein Satz je Band ({len(r)} Faelle)' + (' ' + str(bad[:2]) if bad else ''))
+            # Schalter stabil
+            w0 = await ev("(()=>{const a=document.querySelector('.pk__play').getBoundingClientRect(),b=document.querySelector('.pk__chips').getBoundingClientRect();return [a.width,b.left,b.width]})()")
+            await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(1.2)
+            w1 = await ev("(()=>{const a=document.querySelector('.pk__play').getBoundingClientRect(),b=document.querySelector('.pk__chips').getBoundingClientRect();return [a.width,b.left,b.width]})()")
+            sh = await ev("getComputedStyle(document.querySelector('.pk__chip[aria-pressed=true]')).boxShadow")
+            await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(.3)
+            chk(w0 == w1 and sh == 'none', f'Umschalter stabil bei Play/Pause {w0} {w1}')
+            # Zeitachse einheitlich
+            chk(await ev("(async()=>{const j=await (await fetch('media/glocke.json')).json();return Math.abs(j.grams.dur-j.level.dur)<.05})()"), 'Zeitansichten: gleiche Dauer in grams und level')
             # Abspielen (stumm): Glow mit Nachleuchten, Pegel mit Abspielposition
             for v in ('glow', 'level', 'wipe'):
                 await ev(f"document.querySelector('.pk__vchip[data-view={v}]').click()"); await asyncio.sleep(.5)
@@ -89,6 +107,14 @@ async def main():
                     cl = await ev("(()=>{const r=document.querySelector('.pk').getBoundingClientRect();return {x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height}})()")
                     rr = await cmd('Page.captureScreenshot', format='png', clip={'x': cl['x'], 'y': cl['y'], 'width': cl['w'], 'height': cl['h'], 'scale': 1}); open(f'{OUT}/ansicht-glow-spielt.png', 'wb').write(base64.b64decode(rr['data']))
                 await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(.4)
+            await ev("var e=document.getElementById('ex'); e.value='stereo'; e.dispatchEvent(new Event('change'))"); await asyncio.sleep(1.2)
+            await ev("document.querySelector('.pk__vchip[data-view=stereo]').click()"); await asyncio.sleep(1)
+            for th in ('light', 'dark'):
+                await cmd('Emulation.setEmulatedMedia', features=[{'name': 'prefers-color-scheme', 'value': th}]); await asyncio.sleep(.5)
+                cl = await ev("(()=>{const r=document.querySelector('.pk').getBoundingClientRect();return {x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height}})()")
+                rr = await cmd('Page.captureScreenshot', format='png', clip={'x': cl['x'], 'y': cl['y'], 'width': cl['w'], 'height': cl['h'], 'scale': 1}); open(f'{OUT}/ansicht-stereo-echt-{"hell" if th == "light" else "dunkel"}.png', 'wb').write(base64.b64decode(rr['data']))
+            chk('0,42' in (await ev("document.querySelector('.pk__cap strong').textContent")) or '0.42' in (await ev("document.querySelector('.pk__cap strong').textContent")), 'Stereo-Beispiel: Korrelation 0.42 nachher')
+            await ev("var e=document.getElementById('ex'); e.value='bell'; e.dispatchEvent(new Event('change'))"); await asyncio.sleep(1)
             await ev("document.querySelector('.pk__vchip[data-view=wipe]').click()"); await asyncio.sleep(1.2)
             h0 = await ev("document.querySelector('.pk__v--wipe .pk__cv').toDataURL().length")
             await ev("var r=document.querySelector('.pk__range'); r.value=15; r.dispatchEvent(new Event('input'))"); await asyncio.sleep(.2)
