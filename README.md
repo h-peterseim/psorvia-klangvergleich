@@ -8,8 +8,6 @@ PSOrvia · [psorvia.io](https://psorvia.io)
 
 Two versions of a sound play in sync and you switch between them without a click. The spectrum is drawn as areas, what changed is marked, the curve morphs with the switch, and while playing the real spectrum moves over it. Plain JavaScript and CSS without dependencies.
 
-Translations: [de](docs/i18n/README.de.md) · [bg](docs/i18n/README.bg.md) · [cs](docs/i18n/README.cs.md) · [da](docs/i18n/README.da.md) · [el](docs/i18n/README.el.md) · [es](docs/i18n/README.es.md) · [et](docs/i18n/README.et.md) · [fi](docs/i18n/README.fi.md) · [fr](docs/i18n/README.fr.md) · [ga](docs/i18n/README.ga.md) · [hr](docs/i18n/README.hr.md) · [hu](docs/i18n/README.hu.md) · [id](docs/i18n/README.id.md) · [it](docs/i18n/README.it.md) · [lt](docs/i18n/README.lt.md) · [lv](docs/i18n/README.lv.md) · [mt](docs/i18n/README.mt.md) · [nb](docs/i18n/README.nb.md) · [nl](docs/i18n/README.nl.md) · [pl](docs/i18n/README.pl.md) · [pt](docs/i18n/README.pt.md) · [pt-BR](docs/i18n/README.pt-BR.md) · [ro](docs/i18n/README.ro.md) · [sk](docs/i18n/README.sk.md) · [sl](docs/i18n/README.sl.md) · [sv](docs/i18n/README.sv.md) · [tr](docs/i18n/README.tr.md) · [uk](docs/i18n/README.uk.md)
-
 ## Usage
 
 ```html
@@ -23,7 +21,8 @@ Translations: [de](docs/i18n/README.de.md) · [bg](docs/i18n/README.bg.md) · [c
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +34,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Optional extra views, chosen with the `views` option (default: spectrum only): `wipe` (a divider over two spectrograms), `diff` (added and removed energy), `level` (level over time with the playback position), `stereo` (point clouds with correlation) and `glow` (live spectrum with a soft afterglow). They are drawn in canvas at full device resolution; add `--ansichten` to `tools/vorrechner.py` to compute their data in advance.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` computes the curves, peak labels, band summary and spectrograms in advance (Python 3, numpy, Pillow, ffmpeg).
 

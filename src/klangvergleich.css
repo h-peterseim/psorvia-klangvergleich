@@ -44,3 +44,13 @@
 .pk__cap strong, .pk__heard { color: var(--pk-fg); font-weight: 700; }
 @media (max-width: 40rem) { .pk__plot svg { height: 170px; } .pk__legend { margin-left: 0; } }
 @media (prefers-reduced-motion: reduce) { .pk__diff { transition: none; } }
+.pk [hidden] { display: none !important; }
+.pk__views { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .7rem; }
+.pk__vchip { min-height: 2.75rem; padding: 0 1rem; border-radius: 999px; border: 1px solid var(--pk-line); background: transparent; color: var(--pk-fg); font: 600 .95rem inherit; font-family: inherit; cursor: pointer; }
+.pk__vchip:hover { border-color: var(--pk-a); }
+.pk__vchip[aria-pressed="true"] { background: var(--pk-fg); color: var(--pk-bg); border-color: var(--pk-fg); }
+.pk__cv { display: block; width: 100%; height: 280px; border-radius: 10px; background: var(--pk-bg2); touch-action: pan-y; }
+.pk__v--wipe .pk__cv { cursor: ew-resize; }
+.pk__range { display: block; width: 100%; min-height: 2.75rem; margin: .4rem 0 0; accent-color: var(--pk-a); }
+.pk__range:focus-visible { outline: 3px solid var(--pk-focus); outline-offset: 2px; }
+@media (max-width: 40rem) { .pk__cv { height: 230px; } }

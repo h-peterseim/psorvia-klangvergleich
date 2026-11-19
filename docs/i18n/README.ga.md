@@ -23,7 +23,8 @@ Seinneann dhá leagan d’fhuaim i gcomhsheasmhacht agus athraítear eatarthu ga
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Radhairc bhreise roghnacha, roghnaithe leis an rogha `views` (réamhshocrú: speictream amháin): `wipe` (roinnteoir thar dhá speictreagram), `diff` (fuinneamh breise agus fuinneamh a baineadh), `level` (leibhéal thar am le suíomh an athsheinm), `stereo` (scamaill phointí le comhghaol) agus `glow` (speictream beo le hiarsholas boga). Tarraingítear iad i canvas ag lánréiteach na feiste; le `--ansichten` ríomhann `tools/vorrechner.py` a gcuid sonraí roimh ré.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` ríomhann sé na cuair, lipéid na mbuaicphointí, achoimre na mbanda agus na speictreagraim roimh ré (Python 3, numpy, Pillow, ffmpeg).
 

@@ -23,7 +23,8 @@ Dvije verzije zvuka sviraju sinkronizirano, a među njima se prebacuje bez klika
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Neobvezni dodatni prikazi, biraju se opcijom `views` (zadano: samo spektar): `wipe` (razdjelnik preko dva spektrograma), `diff` (dodana i uklonjena energija), `level` (razina kroz vrijeme s pozicijom reprodukcije), `stereo` (oblaci točaka s korelacijom) i `glow` (spektar uživo s mekim naknadnim sjajem). Crtaju se u canvasu u punoj razlučivosti uređaja; s `--ansichten` `tools/vorrechner.py` unaprijed izračunava njihove podatke.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` unaprijed izračunava krivulje, oznake vrhova, sažetak po pojasevima i spektrograme (Python 3, numpy, Pillow, ffmpeg).
 

@@ -23,7 +23,8 @@ PSOrvia · [psorvia.io](https://psorvia.io)
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Għażliet addizzjonali ta’ veduti, magħżula bl-għażla `views` (awtomatika: spettru biss): `wipe` (diviżur fuq żewġ spettrogrammi), `diff` (enerġija miżjuda u mneħħija), `level` (livell maż-żmien bil-pożizzjoni tal-ipplejjar), `stereo` (sħab ta’ punti b’korrelazzjoni) u `glow` (spettru ħaj b’tleqqija sfumata wara). Jitfasslu fil-canvas bir-riżoluzzjoni sħiħa tal-apparat; b’`--ansichten`, `tools/vorrechner.py` jikkalkula d-dejta tagħhom minn qabel.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` jikkalkula minn qabel il-kurvi, it-tikketti tal-quċċati, is-sommarju tal-faxxi u l-ispettrogrammi (Python 3, numpy, Pillow, ffmpeg).
 

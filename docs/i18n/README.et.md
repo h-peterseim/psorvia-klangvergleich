@@ -23,7 +23,8 @@ Heli kaks versiooni mängivad sünkroonis ja vahetuvad ilma klõpsuta. Spekter j
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Valikulised lisavaated, valitakse suvandiga `views` (vaikimisi ainult spekter): `wipe` (jagaja kahe spektrogrammi kohal), `diff` (lisandunud ja eemaldunud energia), `level` (tase ajas koos esitusasendiga), `stereo` (punktipilved korrelatsiooniga) ja `glow` (reaalajas spekter pehme järelhõõguga). Need joonistatakse canvases seadme täisresolutsioonil; `--ansichten` abil arvutab `tools/vorrechner.py` nende andmed ette.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` arvutab kõverad, tippude sildid, ribakokkuvõtte ja spektrogrammid ette (Python 3, numpy, Pillow, ffmpeg).
 

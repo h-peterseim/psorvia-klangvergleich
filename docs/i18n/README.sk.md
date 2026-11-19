@@ -23,7 +23,8 @@ Dve verzie zvuku hrajú synchrónne a prepína sa medzi nimi bez kliknutia. Spek
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Voliteľné ďalšie zobrazenia, volia sa možnosťou `views` (predvolene: iba spektrum): `wipe` (deliaca čiara nad dvoma spektrogramami), `diff` (pridaná a ubratá energia), `level` (úroveň v čase s pozíciou prehrávania), `stereo` (oblaky bodov s koreláciou) a `glow` (spektrum naživo s jemným dosvitom). Kreslia sa v canvase v plnom rozlíšení zariadenia; s `--ansichten` ich údaje vopred vypočíta `tools/vorrechner.py`.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` vopred vypočíta krivky, popisky vrcholov, zhrnutie pásiem a spektrogramy (Python 3, numpy, Pillow, ffmpeg).
 

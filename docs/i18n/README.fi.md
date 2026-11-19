@@ -23,7 +23,8 @@ PSOrvia · [psorvia.io](https://psorvia.io)
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Valinnaiset lisänäkymät, valitaan asetuksella `views` (oletus: vain spektri): `wipe` (jakaja kahden spektrogrammin päällä), `diff` (lisääntynyt ja vähentynyt energia), `level` (taso ajan yli toistokohdan kanssa), `stereo` (pistepilvet korrelaatiolla) ja `glow` (reaaliaikainen spektri pehmeällä jälkihohdolla). Ne piirretään canvasiin laitteen täydellä erottelukyvyllä; `--ansichten` laskee niiden tiedot etukäteen `tools/vorrechner.py`-työkalulla.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` laskee käyrät, huippujen tunnisteet, kaistayhteenvedon ja spektrogrammit etukäteen (Python 3, numpy, Pillow, ffmpeg).
 

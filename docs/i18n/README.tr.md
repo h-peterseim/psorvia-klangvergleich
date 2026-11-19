@@ -23,7 +23,8 @@ Bir sesin iki sürümü eşzamanlı çalar ve aralarında tıklamadan geçilir. 
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+İsteğe bağlı ek görünümler, `views` seçeneğiyle seçilir (varsayılan: yalnızca spektrum): `wipe` (iki spektrogramın üzerinde ayırıcı), `diff` (eklenen ve çıkan enerji), `level` (oynatma konumuyla zaman içinde seviye), `stereo` (korelasyonlu nokta bulutları) ve `glow` (yumuşak art ışımalı canlı spektrum). Cihazın tam çözünürlüğünde canvas içinde çizilirler; `--ansichten` ile `tools/vorrechner.py` verilerini önceden hesaplar.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` eğrileri, tepe etiketlerini, bant özetini ve spektrogramları önceden hesaplar (Python 3, numpy, Pillow, ffmpeg).
 

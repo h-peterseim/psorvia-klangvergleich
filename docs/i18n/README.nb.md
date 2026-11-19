@@ -23,7 +23,8 @@ To versjoner av en lyd spilles synkront, og du bytter mellom dem uten klikk. Spe
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Valgfrie ekstra visninger, velges med alternativet `views` (standard: bare spekter): `wipe` (en skillelinje over to spektrogrammer), `diff` (tilført og fjernet energi), `level` (nivå over tid med avspillingsposisjon), `stereo` (punktskyer med korrelasjon) og `glow` (live-spekter med myk etterglød). De tegnes i canvas i enhetens full oppløsning; med `--ansichten` beregner `tools/vorrechner.py` dataene på forhånd.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` beregner kurver, toppetiketter, båndoppsummering og spektrogrammer på forhånd (Python 3, numpy, Pillow, ffmpeg).
 

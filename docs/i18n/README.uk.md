@@ -23,7 +23,8 @@ PSOrvia · [psorvia.io](https://psorvia.io)
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Необов’язкові додаткові вигляди, вибираються опцією `views` (типово: лише спектр): `wipe` (роздільник над двома спектрограмами), `diff` (додана і прибрана енергія), `level` (рівень у часі з позицією відтворення), `stereo` (хмари точок з кореляцією) і `glow` (спектр наживо з м’яким післясяйвом). Вони малюються в canvas у повній роздільній здатності пристрою; з `--ansichten` `tools/vorrechner.py` заздалегідь обчислює їхні дані.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` заздалегідь обчислює криві, підписи піків, підсумок за смугами та спектрограми (Python 3, numpy, Pillow, ffmpeg).
 

@@ -23,7 +23,8 @@ Duas versões de um som tocam em sincronia e alterna-se entre elas sem clique. O
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Vistas adicionais opcionais, escolhidas com a opção `views` (por omissão: só espetro): `wipe` (uma divisória sobre dois espetrogramas), `diff` (energia acrescentada e removida), `level` (nível ao longo do tempo com a posição de reprodução), `stereo` (nuvens de pontos com correlação) e `glow` (espetro em direto com um brilho residual suave). São desenhadas em canvas à resolução total do dispositivo; com `--ansichten`, `tools/vorrechner.py` calcula os seus dados previamente.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` calcula de antemão as curvas, as etiquetas de picos, o resumo por bandas e os espetrogramas (Python 3, numpy, Pillow, ffmpeg).
 

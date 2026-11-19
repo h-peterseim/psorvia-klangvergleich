@@ -23,7 +23,8 @@ Divas skaņas versijas skan sinhroni, un starp tām pārslēdzas bez klikšķa. 
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Neobligāti papildu skati, izvēlas ar opciju `views` (noklusējums: tikai spektrs): `wipe` (atdalītājs virs divām spektrogrammām), `diff` (pievienotā un noņemtā enerģija), `level` (līmenis laikā ar atskaņošanas pozīciju), `stereo` (punktu mākoņi ar korelāciju) un `glow` (spektrs tiešraidē ar maigu pēcspīdumu). Tie tiek zīmēti canvas ar pilnu ierīces izšķirtspēju; ar `--ansichten` `tools/vorrechner.py` to datus aprēķina iepriekš.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` iepriekš aprēķina līknes, virsotņu etiķetes, joslu kopsavilkumu un spektrogrammas (Python 3, numpy, Pillow, ffmpeg).
 

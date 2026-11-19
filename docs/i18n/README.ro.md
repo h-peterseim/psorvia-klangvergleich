@@ -23,7 +23,8 @@ Două versiuni ale unui sunet rulează sincronizat, iar între ele se trece făr
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Vizualizări suplimentare opționale, alese cu opțiunea `views` (implicit: doar spectru): `wipe` (un separator peste două spectrograme), `diff` (energie adăugată și eliminată), `level` (nivel în timp cu poziția de redare), `stereo` (nori de puncte cu corelație) și `glow` (spectru live cu o strălucire reziduală blândă). Sunt desenate în canvas la rezoluția completă a dispozitivului; cu `--ansichten`, `tools/vorrechner.py` le calculează datele în avans.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` calculează în avans curbele, etichetele vârfurilor, rezumatul pe benzi și spectrogramele (Python 3, numpy, Pillow, ffmpeg).
 

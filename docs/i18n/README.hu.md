@@ -23,7 +23,8 @@ Egy hang két változata szinkronban szól, és kattintás nélkül lehet válta
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Opcionális további nézetek, a `views` beállítással választhatók (alapértelmezés: csak spektrum): `wipe` (elválasztó két spektrogram felett), `diff` (hozzáadott és elvett energia), `level` (szint az idő függvényében a lejátszási pozícióval), `stereo` (pontfelhők korrelációval) és `glow` (élő spektrum lágy utánvilágítással). Canvasban rajzolódnak a készülék teljes felbontásán; az `--ansichten` kapcsolóval a `tools/vorrechner.py` előre kiszámítja az adataikat.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` előre kiszámítja a görbéket, a csúcscímkéket, a sávösszegzést és a spektrogramokat (Python 3, numpy, Pillow, ffmpeg).
 

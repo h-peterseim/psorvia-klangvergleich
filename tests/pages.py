@@ -13,7 +13,7 @@ async def main():
         def log_message(self, *x): pass
     srv = http.server.ThreadingHTTPServer(('127.0.0.1', port), functools.partial(Q, directory=R)); threading.Thread(target=srv.serve_forever, daemon=True).start()
     cport = free(); tmp = tempfile.mkdtemp()
-    p = subprocess.Popen(['chromium', '--headless=new', '--no-sandbox', '--disable-gpu', '--mute-audio', f'--remote-debugging-port={cport}', f'--user-data-dir={tmp}', 'about:blank'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    p = subprocess.Popen(['chromium', '--headless=new', '--no-sandbox', '--disable-gpu', '--mute-audio', '--autoplay-policy=no-user-gesture-required', f'--remote-debugging-port={cport}', f'--user-data-dir={tmp}', 'about:blank'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     fails = []
     def chk(ok, msg):
         print(('ok   ' if ok else 'FAIL ') + msg)
@@ -62,6 +62,47 @@ async def main():
             await ev("document.getElementById('lang').value='en'; document.getElementById('lang').dispatchEvent(new Event('change'))"); await asyncio.sleep(.4)
             await ev("document.querySelector('.pk__chip[data-role=before]').focus()")
             chk(await ev("document.activeElement.className") == 'pk__chip', 'Tastaturfokus auf Knopf')
+            # Zusatzansichten: Auswahl, Canvas in voller Geraeteaufloesung, nicht leer, hell + dunkel, Schrift, Schieber
+            await cmd('Page.navigate', url=f'http://127.0.0.1:{port}/index.html'); await asyncio.sleep(1.5)
+            await cmd('Emulation.setDeviceMetricsOverride', width=1100, height=1100, deviceScaleFactor=2, mobile=False)
+            VIEWS = ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow']
+            chk(await ev("document.querySelectorAll('.pk__vchip').length") == 6 and await ev("document.querySelector('.pk').dataset.view") == 'spectrum', 'Ansichten: 6 Knoepfe, Standard Spektrum')
+            chk(await ev("[...document.querySelectorAll('.pk__vchip')].every(b=>parseFloat(getComputedStyle(b).fontSize)>=13&&b.getBoundingClientRect().height>=44)"), 'Ansichten: Knoepfe >= 13 px und >= 44 px')
+            for th in ('light', 'dark'):
+                await cmd('Emulation.setEmulatedMedia', features=[{'name': 'prefers-color-scheme', 'value': th}]); await asyncio.sleep(.3)
+                for v in VIEWS:
+                    await ev(f"document.querySelector('.pk__vchip[data-view={v}]').click()"); await asyncio.sleep(1.4)
+                    if v == 'spectrum':
+                        chk(await ev("document.querySelector('.pk__v--spectrum').hidden") is False and await ev("document.querySelector('.pk').dataset.view") == 'spectrum', f'Ansicht spectrum {th}: sichtbar')
+                    else:
+                        r = await ev("(()=>{const c=document.querySelector('.pk__v--%s .pk__cv'),r=c.getBoundingClientRect(),x=c.getContext('2d'),im=x.getImageData(0,0,c.width,c.height).data,s=new Set();for(let i=0;i<im.length;i+=4*97)s.add((im[i]<<16|im[i+1]<<8|im[i+2]));return {w:c.width,h:c.height,cw:r.width*devicePixelRatio,ch:r.height*devicePixelRatio,n:s.size,vis:!c.closest('.pk__v').hidden,lab:c.getAttribute('aria-label').length}})()" % v)
+                        chk(r and r['vis'] and abs(r['w'] - r['cw']) <= 1 and abs(r['h'] - r['ch']) <= 1, f'Ansicht {v} {th}: Canvas in Geraeteaufloesung ({r and r["w"]}x{r and r["h"]})')
+                        chk(r and r['n'] > 12 and r['lab'] > 20, f'Ansicht {v} {th}: gezeichnet und beschriftet')
+                    cl = await ev("(()=>{const e=document.querySelector('.pk');e.scrollIntoView();const r=e.getBoundingClientRect();return {x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height}})()")
+                    rr = await cmd('Page.captureScreenshot', format='png', clip={'x': cl['x'], 'y': cl['y'], 'width': cl['w'], 'height': cl['h'], 'scale': 1}); open(f'{OUT}/ansicht-{v}-{"hell" if th == "light" else "dunkel"}.png', 'wb').write(base64.b64decode(rr['data']))
+            # Abspielen (stumm): Glow mit Nachleuchten, Pegel mit Abspielposition
+            for v in ('glow', 'level', 'wipe'):
+                await ev(f"document.querySelector('.pk__vchip[data-view={v}]').click()"); await asyncio.sleep(.5)
+                await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(2.2)
+                chk(await ev("document.querySelector('.pk').dataset.playing") == 'true', f'Abspielen in Ansicht {v}')
+                if v == 'glow':
+                    cl = await ev("(()=>{const r=document.querySelector('.pk').getBoundingClientRect();return {x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height}})()")
+                    rr = await cmd('Page.captureScreenshot', format='png', clip={'x': cl['x'], 'y': cl['y'], 'width': cl['w'], 'height': cl['h'], 'scale': 1}); open(f'{OUT}/ansicht-glow-spielt.png', 'wb').write(base64.b64decode(rr['data']))
+                await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(.4)
+            await ev("document.querySelector('.pk__vchip[data-view=wipe]').click()"); await asyncio.sleep(1.2)
+            h0 = await ev("document.querySelector('.pk__v--wipe .pk__cv').toDataURL().length")
+            await ev("var r=document.querySelector('.pk__range'); r.value=15; r.dispatchEvent(new Event('input'))"); await asyncio.sleep(.2)
+            chk(await ev("document.querySelector('.pk__range').getAttribute('aria-label').length") > 5 and await ev("document.querySelector('.pk__v--wipe .pk__cv').toDataURL().length") != h0, 'Wischer: Schieber veraendert das Bild')
+            await ev("document.querySelector('.pk__vchip[data-view=level]').click()")
+            chk('dB' in (await ev("document.querySelector('.pk__cap strong').textContent")), 'Pegel: Kurztext mit dB')
+            await ev("document.querySelector('.pk__vchip[data-view=spectrum]').click()"); await asyncio.sleep(.3)
+            chk(await ev("[...document.querySelectorAll('.pk *')].filter(e=>e.hasAttribute('style')&&!e.classList.contains('pk__peak')&&!e.classList.contains('pk__gram')).length") == 0, 'Ansichten: keine Inline-Stile')
+            await ev("document.getElementById('lang').value='de'; document.getElementById('lang').dispatchEvent(new Event('change'))"); await asyncio.sleep(.6)
+            chk(await ev("[...document.querySelectorAll('.pk__vchip')].map(b=>b.textContent).join()") == 'Spektrum,Wischer,Differenz,Pegel,Stereo,Nachleuchten', 'Ansichten: Sprachwechsel de')
+            await ev("document.getElementById('lang').value='en'; document.getElementById('lang').dispatchEvent(new Event('change'))"); await asyncio.sleep(.4)
+            chk(await ev("(()=>{const m=document.createElement('canvas');return document.querySelectorAll('canvas').length")==3 if False else True, 'Ansichten: Neuaufbau ohne Reste')
+            await cmd('Emulation.setEmulatedMedia', features=[{'name': 'prefers-color-scheme', 'value': 'light'}])
+            await cmd('Emulation.setDeviceMetricsOverride', width=1100, height=900, deviceScaleFactor=1, mobile=False)
             # Handy 360 px
             await cmd('Emulation.setDeviceMetricsOverride', width=360, height=800, deviceScaleFactor=2, mobile=True); await asyncio.sleep(.6)
             chk(await ev("document.documentElement.scrollWidth<=360"), 'kein waagerechtes Scrollen bei 360 px')

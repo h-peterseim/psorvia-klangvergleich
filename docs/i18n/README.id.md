@@ -23,7 +23,8 @@ Dua versi suara diputar serempak dan Anda berpindah di antara keduanya tanpa kli
 PsoKlangvergleich.create(document.getElementById('kv'), {
   lang: 'en',
   before: { src: 'before.m4a', label: 'Before' }, after: { src: 'after.m4a', label: 'After' },
-  data: /* JSON from tools/vorrechner.py */ {}
+  data: /* JSON from tools/vorrechner.py */ {},
+  views: ['spectrum', 'wipe', 'diff', 'level', 'stereo', 'glow'] // optional
 });
 </script>
 ```
@@ -35,6 +36,8 @@ import './klangvergleich.i18n.esm.js';
 auto(); // every [data-klangvergleich] element, options as JSON in the attribute or in an inner <script type="application/json">
 </script>
 ```
+
+Tampilan tambahan opsional, dipilih dengan opsi `views` (bawaan: hanya spektrum): `wipe` (pembagi di atas dua spektrogram), `diff` (energi yang ditambah dan dikurangi), `level` (level menurut waktu dengan posisi pemutaran), `stereo` (awan titik dengan korelasi) dan `glow` (spektrum langsung dengan cahaya susulan yang lembut). Semuanya digambar di canvas pada resolusi penuh perangkat; dengan `--ansichten`, `tools/vorrechner.py` menghitung datanya lebih dulu.
 
 `tools/vorrechner.py before.wav after.wav --gipfel 5 --png media/x --out data.json` menghitung kurva, label puncak, ringkasan pita, dan spektrogram sebelumnya (Python 3, numpy, Pillow, ffmpeg).
 
