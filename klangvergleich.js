@@ -18,7 +18,7 @@ const EN = {
   alt_stereo: 'Stereo image of before and after as point clouds, with correlation',
   alt_glow: 'Live spectrum while playing, with a soft afterglow',
   lv_louder: 'On average {x} dB louder.', lv_quieter: 'On average {x} dB quieter.', lv_same: 'The average level hardly changes.',
-  glow_idle: 'Press play to see the live spectrum.', corr: 'Correlation',
+  glow_idle: 'Press play to see the live spectrum.', corr: 'Correlation', stereo_idle: 'Press play for the live view.',
   v_waterfall: 'Waterfall', v_radial: 'Radial', alt_waterfall: 'Spectrum as a three-dimensional landscape over time; the newest moment is in front', alt_radial: 'Spectrum as pulsing rings, before inside and after outside; low frequencies at the top', mix: 'Crossfade'
 };
 const languages = { en: EN };
@@ -328,24 +328,54 @@ function create(host, o) {
     corner(q, c, nm); playhead(q, c, lv.dur);
   };
   const unbCache = (t) => sdat[t] || (sdat[t] = unb64(d.stereo[t].d));
+  const gon = {}, ghist = { before: [], after: [] }, corrS = { before: null, after: null };
+  let gscale = .05, slowT = null;
+  const readGon = () => {
+    let pk = 0;
+    for (const tag of ['before', 'after']) {
+      const t = nodes[tag] && nodes[tag].tap; if (!t || !t.sp) continue;
+      const n = t.bl.length, step = 4, pts = new Float32Array(2 * (n / step)); let ll = 0, rr = 0, lr = 0;
+      for (let i = 0; i < n; i++) { ll += t.bl[i] * t.bl[i]; rr += t.br[i] * t.br[i]; lr += t.bl[i] * t.br[i]; }
+      for (let i = 0, j = 0; i < n; i += step, j += 2) { pts[j] = (t.bl[i] - t.br[i]) * .7071; pts[j + 1] = (t.bl[i] + t.br[i]) * .7071; pk = Math.max(pk, Math.abs(pts[j]), Math.abs(pts[j + 1])); }
+      const den = Math.sqrt(ll * rr), cr = den > 1e-9 ? lr / den : 0;
+      corrS[tag] = corrS[tag] == null ? cr : corrS[tag] * .85 + cr * .15;
+      if (!reduce) { ghist[tag].push(pts); if (ghist[tag].length > 5) ghist[tag].shift(); }
+      gon[tag] = pts;
+    }
+    gscale = Math.max(.05, pk, gscale * .985);
+  };
+  const clearGon = () => { gon.before = gon.after = null; ghist.before.length = ghist.after.length = 0; corrS.before = corrS.after = null; };
   const drawStereo = (q, c) => {
-    const x = q.x, k = q.k, st = d.stereo, G = st.n, R = Math.max(10 * k, Math.min(q.h / 2 - 30 * k, q.w / 4 - 24 * k)), cl = 2 * R / G, s2 = R * .7071;
+    const x = q.x, k = q.k, st = d.stereo, G = st.n, R = Math.max(10 * k, Math.min(q.h / 2 - 48 * k, q.w / 4 - 40 * k)), cl = 2 * R / G, s2 = R * .7071, live = playing && gon.before && gon.after;
     bgfill(q, c);
     [['before', c.b, q.w * .25], ['after', c.a, q.w * .75]].forEach(([tag, col, cx], pi) => {
-      const cy = q.h / 2 - 8 * k, dat = unbCache(tag);
+      const cy = q.h / 2 - 20 * k, dat = unbCache(tag), wgt = Math.max(.15, gainOf(tag));
       x.strokeStyle = c.line; x.lineWidth = k;
       x.beginPath(); x.arc(cx, cy, R, 0, 6.2832); x.moveTo(cx, cy - R); x.lineTo(cx, cy + R); x.moveTo(cx - R, cy); x.lineTo(cx + R, cy);
       x.moveTo(cx - s2, cy - s2); x.lineTo(cx + s2, cy + s2); x.moveTo(cx + s2, cy - s2); x.lineTo(cx - s2, cy + s2); x.stroke();
       x.fillStyle = col;
+      const dim = live ? .3 : 1;
       for (let i = 0; i < G; i++) for (let j = 0; j < G; j++) {
         const v = dat[i * G + j]; if (v < 6) continue;
         const t = v / 255, px = cx + (-1 + (j + .5) * 2 / G) * R, py = cy - (-1 + (i + .5) * 2 / G) * R;
-        x.globalAlpha = .18 + .82 * t; x.beginPath(); x.arc(px, py, cl * (.45 + .6 * t), 0, 6.2832); x.fill();
+        x.globalAlpha = (.18 + .82 * t) * dim; x.beginPath(); x.arc(px, py, cl * (.45 + .6 * t), 0, 6.2832); x.fill();
+      }
+      if (live) {
+        const dot = (pts, al) => { x.globalAlpha = al; for (let j = 0; j < pts.length; j += 2) x.fillRect(cx + pts[j] / gscale * R * .92 - k, cy - pts[j + 1] / gscale * R * .92 - k, 2 * k, 2 * k); };
+        const hs = ghist[tag];
+        hs.forEach((h, i) => dot(h, (.04 + .16 * (i + 1) / hs.length) * (.3 + .7 * wgt)));
+        dot(gon[tag], (.45 + .45 * wgt));
       }
       x.globalAlpha = 1;
       lab(q, c, 'L', cx - s2 - 12 * k, cy - s2 - 6 * k, 'center', c.mut); lab(q, c, 'R', cx + s2 + 12 * k, cy - s2 - 6 * k, 'center', c.mut);
-      lab(q, c, nm[pi] + ' · ' + L.corr + ' ' + num(st[tag].corr, lang, 2), cx, q.h - 14 * k, 'center', col);
+      const cr = live && corrS[tag] != null ? corrS[tag] : st[tag].corr, ym = q.h - 36 * k;
+      x.fillStyle = c.line; x.fillRect(cx - R, ym - 4 * k, 2 * R, 8 * k);
+      x.fillStyle = col; x.globalAlpha = .55 + .45 * wgt; x.fillRect(cr >= 0 ? cx : cx + cr * R, ym - 4 * k, Math.abs(cr) * R, 8 * k); x.globalAlpha = 1;
+      x.fillStyle = c.fg; x.fillRect(cx - k, ym - 7 * k, 2 * k, 14 * k);
+      lab(q, c, '−1', cx - R - 6 * k, ym, 'right', c.mut); lab(q, c, '+1', cx + R + 6 * k, ym, 'left', c.mut);
+      lab(q, c, nm[pi] + ' · ' + L.corr + ' ' + num(cr, lang, 2), cx, q.h - 14 * k, 'center', col);
     });
+    if (!live) lab(q, c, '▶ ' + L.stereo_idle, q.w / 2, 14 * k, 'center', c.fg);
   };
   const smooth = (x, arr, Wd, Y) => {
     x.beginPath();
@@ -359,7 +389,7 @@ function create(host, o) {
     const x = q.x, k = q.k, dt = Math.min(.1, Math.max(0, (now - gt) / 1000)); gt = now;
     const live = playing && lvl, Y = (v) => q.h * (.1 + .78 * (1 - (Math.max(-60, Math.min(0, v)) + 60) / 60)), col = cmix(c, xf), fg = fgrad(x, q.w, c);
     for (let i = 0; i < N; i++) trail[i] = live ? Math.max(lvl[i], trail[i] - 20 * dt) : -60;
-    if (live) { if (now - hlast > 70) { hist.push(Float32Array.from(trail)); if (hist.length > 9) hist.shift(); hlast = now; } } else hist.length = 0;
+    if (live) { if (now - hlast > 70) { hist.push(Float32Array.from(trail)); if (hist.length > 6) hist.shift(); hlast = now; } } else hist.length = 0;
     bgfill(q, c);
     x.strokeStyle = c.line; x.lineWidth = k; for (const f of [.25, .5, .75]) { x.beginPath(); x.moveTo(0, q.h * f); x.lineTo(q.w, q.h * f); x.stroke(); }
     hlDraw(q, c, 'x');
@@ -370,7 +400,7 @@ function create(host, o) {
       smooth(x, trail, q.w, Y); x.lineTo(q.w, q.h); x.lineTo(0, q.h); x.closePath();
       const gr = x.createLinearGradient(0, 0, 0, q.h); gr.addColorStop(0, col); gr.addColorStop(1, 'transparent');
       x.globalAlpha = .38; x.fillStyle = fg; x.fill(); x.globalAlpha = .3; x.fillStyle = gr; x.fill(); x.globalAlpha = 1;
-      smooth(x, lvl, q.w, Y); x.strokeStyle = fg; x.lineWidth = 2.4 * k; x.shadowColor = c.dark ? '#ffffff' : '#000000'; x.shadowBlur = 10 * k; x.lineJoin = 'round'; x.stroke(); x.shadowBlur = 0;
+      smooth(x, lvl, q.w, Y); x.strokeStyle = fg; x.lineJoin = 'round'; x.globalAlpha = .22; x.lineWidth = 8 * k; x.stroke(); x.globalAlpha = 1; x.lineWidth = 2.4 * k; x.stroke();
       if (!reduce) {
         if (plv) for (let i = 1; i < N - 1 && sparks.length < 36; i++) {
           if (lvl[i] > -14 && lvl[i] >= lvl[i - 1] && lvl[i] >= lvl[i + 1] && lvl[i] - plv[i] > 5 && Math.random() < .5) sparks.push({ x: i / (N - 1) * q.w, y: Y(lvl[i]), vx: (Math.random() - .5) * 60 * k, vy: -(40 + Math.random() * 70) * k, life: 1, u: i / (N - 1) });
@@ -616,13 +646,16 @@ function create(host, o) {
       live.setAttribute('d', line(lvl));
       if (view === 'wipe' || view === 'diff' || view === 'level') redraw(now);
     }
-    if (view === 'glow' || view === 'radial' || (view === 'waterfall' && playing)) redraw(now);
+    if (view === 'stereo' && playing) readGon();
+    if (view === 'glow' || view === 'radial' || (view === 'waterfall' && playing) || (view === 'stereo' && playing)) redraw(now);
     raf = requestAnimationFrame(frame);
   };
   const stop = (ended) => {
     if (!playing) return;
     if (!ended) offset = ctx.currentTime - started;
-    for (const n of Object.values(nodes)) { n.src.onended = null; try { n.src.stop(); } catch (e) { /* schon beendet */ } }
+    for (const n of Object.values(nodes)) { n.src.onended = null; try { n.src.stop(); } catch (e) { /* schon beendet */ } if (n.tap && n.tap.sp) { n.tap.sp.onaudioprocess = null; try { n.tap.sp.disconnect(); } catch (e) { /* schon getrennt */ } } }
+    if (slowT) { clearInterval(slowT); slowT = null; }
+    clearGon();
     playing = false;
     if (raf) { cancelAnimationFrame(raf); raf = null; }
     live.setAttribute('d', '');
@@ -656,13 +689,19 @@ function create(host, o) {
       const src = ctx.createBufferSource(), gain = ctx.createGain();
       src.buffer = buf[r]; gain.gain.value = gainOf(r);
       src.connect(gain).connect(master); src.start(0, offset);
-      nodes[r] = { src, gain };
+      const tap = { bl: new Float32Array(1024), br: new Float32Array(1024), sp: null };
+      if (ctx.createScriptProcessor) {
+        const sp = ctx.createScriptProcessor(1024, 2, 1); sp.channelCount = 2; sp.channelCountMode = 'explicit';
+        sp.onaudioprocess = (e) => { tap.bl.set(e.inputBuffer.getChannelData(0)); tap.br.set(e.inputBuffer.getChannelData(1)); };
+        src.connect(sp); sp.connect(ctx.destination); tap.sp = sp;
+      }
+      nodes[r] = { src, gain, tap };
     }
     started = ctx.currentTime - offset;
     nodes.after.src.onended = () => { if (playing) { offset = 0; stop(true); } };
     playing = true;
     say();
-    if (!reduce) kick(); else redraw();
+    if (!reduce) kick(); else { redraw(); slowT = setInterval(() => { if (playing && vis && docVis && view === 'stereo') { readGon(); redraw(); } }, 250); }
   };
   play.addEventListener('click', toggle);
   for (const r in chips) chips[r].addEventListener('click', () => setMode(r));
@@ -675,7 +714,7 @@ function create(host, o) {
   }
   say();
   setView(view);
-  const api = { setMode, play: toggle, stop: () => stop(false), destroy() { dead = true; stop(false); stopIntro(); stopXf(); if (raf) cancelAnimationFrame(raf); if (io) io.disconnect(); document.removeEventListener('visibilitychange', vc); if (ro) ro.disconnect(); if (mo) mo.disconnect(); if (mq && mq.removeEventListener) mq.removeEventListener('change', rerun); if (ctx) ctx.close(); host.textContent = ''; host.classList.remove('pk'); } };
+  const api = { setMode, play: toggle, stop: () => stop(false), destroy() { dead = true; if (slowT) clearInterval(slowT); stop(false); stopIntro(); stopXf(); if (raf) cancelAnimationFrame(raf); if (io) io.disconnect(); document.removeEventListener('visibilitychange', vc); if (ro) ro.disconnect(); if (mo) mo.disconnect(); if (mq && mq.removeEventListener) mq.removeEventListener('change', rerun); if (ctx) ctx.close(); host.textContent = ''; host.classList.remove('pk'); } };
   return api;
 }
 function auto(root = document, defaults = {}) {

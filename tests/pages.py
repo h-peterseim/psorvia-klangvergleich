@@ -108,7 +108,11 @@ async def main():
                 await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(2.2)
                 chk(await ev("document.querySelector('.pk').dataset.playing") == 'true', f'Abspielen in Ansicht {v}')
                 FPS[v] = await ev("new Promise(r=>{let n=0,t0=performance.now();const f=()=>{n++;if(performance.now()-t0<2500)requestAnimationFrame(f);else r(n/((performance.now()-t0)/1000))};requestAnimationFrame(f)})")
-                if v in ('glow', 'waterfall', 'radial'):
+                if v == 'stereo':
+                    u1 = await ev("document.querySelector('.pk__v--stereo .pk__cv').toDataURL().length"); await asyncio.sleep(.35)
+                    u2 = await ev("document.querySelector('.pk__v--stereo .pk__cv').toDataURL().length")
+                    chk(u1 != u2, 'Stereo: Live-Goniometer bewegt sich beim Abspielen')
+                if v in ('glow', 'waterfall', 'radial', 'stereo'):
                     cl = await ev("(()=>{const r=document.querySelector('.pk').getBoundingClientRect();return {x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height}})()")
                     rr = await cmd('Page.captureScreenshot', format='png', clip={'x': cl['x'], 'y': cl['y'], 'width': cl['w'], 'height': cl['h'], 'scale': 1}); open(f'{OUT}/ansicht-{v}-spielt.png', 'wb').write(base64.b64decode(rr['data']))
                 await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(.4)
@@ -174,6 +178,11 @@ async def main():
                 chk(await ev("document.querySelector('.pk__heard').textContent.indexOf('could not')<0"), f'file://{pg}: keine Fehlermeldung')
                 await ev("document.querySelector('.pk__vchip[data-view=level]').click()"); await asyncio.sleep(.5)
                 chk(await ev("document.querySelector('.pk__v--level').hidden") is False, f'file://{pg}: Ansicht Pegel')
+                await ev("document.querySelector('.pk__vchip[data-view=stereo]').click()"); await asyncio.sleep(.4)
+                await ev("document.querySelector('.pk__play').click()"); await asyncio.sleep(1.2)
+                w1 = await ev("document.querySelector('.pk__v--stereo .pk__cv').toDataURL().length"); await asyncio.sleep(.4)
+                chk(w1 != await ev("document.querySelector('.pk__v--stereo .pk__cv').toDataURL().length"), f'file://{pg}: Live-Goniometer laeuft')
+                await ev("document.querySelector('.pk__play').click()")
             # Hero ohne Bedienelemente
             await cmd('Page.navigate', url=f'http://127.0.0.1:{port}/hero.html'); await asyncio.sleep(2)
             chk(await ev("getComputedStyle(document.querySelector('.pk__head')).display") == 'none' and await ev("document.querySelector('.pk__cv').getAttribute('role')") == 'button', 'hero: ohne Bedienelemente, Canvas ist Knopf')
